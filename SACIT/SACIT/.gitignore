@@ -4,6 +4,9 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
+# Ignorar application.properties
+# application.properties
+
 ### STS ###
 .apt_generated
 .classpath
@@ -31,3 +34,8 @@ build/
 
 ### VS Code ###
 .vscode/
+src/main/resources/application.properties
+src/main/resources/application-dev.properties
+src/main/resources/application-prod.properties
+src/main/resources/application-test.properties
+src/main/resources/email.properties
