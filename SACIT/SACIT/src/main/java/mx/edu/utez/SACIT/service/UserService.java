@@ -9,8 +9,10 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @Primary
@@ -28,6 +30,14 @@ public class UserService {
         return this.repository.findAll(Sort.by("id").ascending());
     }
 
+    public UserModel findByUuid(UUID uuid) {
+        Optional<UserModel> optional = repository.findByUuid(uuid);
+        if (optional.isPresent()) {
+            return optional.get();
+        }
+        return null;
+    }
+
     public UserModel findById(Integer id){
         Optional<UserModel> optional = repository.findById(id);
         if (optional.isPresent()){
@@ -38,8 +48,12 @@ public class UserService {
     public void save(UserModel user){
         this.repository.save(user);
     }
-    public void delete(Integer id){
-        this.repository.deleteById(id);
+
+    public void delete(UUID uuid) {
+        Optional<UserModel> optional = repository.findByUuid(uuid);
+        if (optional.isPresent()) {
+            this.repository.delete(optional.get());
+        }
     }
 
     public UserModel findByEmail(String email){
@@ -53,4 +67,5 @@ public class UserService {
         resetToken.setExpiryDate(java.time.LocalDateTime.now().plusHours(1));
         passwordRepository.save(resetToken);
     }
+
 }

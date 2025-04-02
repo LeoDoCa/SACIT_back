@@ -19,9 +19,6 @@ public class RoleModel {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column( updatable = false, nullable = false,unique = true)
-    private UUID uuid;
-
     private String role;
 
     @OneToMany

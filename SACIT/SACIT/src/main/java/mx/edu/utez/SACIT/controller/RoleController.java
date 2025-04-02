@@ -2,6 +2,8 @@ package mx.edu.utez.SACIT.controller;
 
 import mx.edu.utez.SACIT.model.RoleModel;
 import mx.edu.utez.SACIT.service.RoleService;
+import mx.edu.utez.SACIT.utils.Utilities;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -32,7 +34,8 @@ public class RoleController {
     }
     @PostMapping("/role")
     public ResponseEntity save(@RequestBody RoleModel role){
-        return ResponseEntity.ok(roleService.saveRole(role));
+        this.roleService.saveRole(role);
+        return Utilities.generateResponse(HttpStatus.OK, "Record created successfully.");
     }
 
     @PutMapping("/role/{id}")
