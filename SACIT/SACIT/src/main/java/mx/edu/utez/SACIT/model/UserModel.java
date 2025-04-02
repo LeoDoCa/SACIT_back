@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+
+import java.sql.Date;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -24,17 +26,18 @@ public class UserModel {
     private String lastName;
     private String email;
     private String password;
+    private Date creationDate;
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "role_id", nullable = false)
     private RoleModel role;
 
-    @OneToMany(mappedBy = "creator")
+    @OneToMany(mappedBy = "creator", cascade = CascadeType.ALL)
     private Set<Procedures> createdProcedures = new HashSet<>();
 
-    @OneToMany(mappedBy = "attendant")
+    @OneToMany(mappedBy = "attendant", cascade = CascadeType.ALL)
     private Set<Window> attendedWindows = new HashSet<>();
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private Set<Appointments> appointments = new HashSet<>();
 
     public UserModel(UUID uuid, String name, String lastName, String email, String password, RoleModel role) {
@@ -53,4 +56,15 @@ public class UserModel {
         this.password = password;
         this.role = role;
     }
+
+    @PrePersist
+    public void generateUUID() {
+        if (uuid == null) {
+            uuid = UUID.randomUUID();
+        }
+        if (creationDate == null) {
+            creationDate = new Date(System.currentTimeMillis());
+        }
+    }
+
 }

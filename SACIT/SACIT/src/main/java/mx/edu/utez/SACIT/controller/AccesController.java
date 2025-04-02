@@ -15,8 +15,11 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
+
 @RestController
-@RequestMapping("api/")
+@RequestMapping("/api")
+@CrossOrigin(origins = "*")
 public class AccesController {
     private final AuthenticationManager authenticationManager;
     private final JwtTokenUtil jwtTokenUtil;
@@ -33,21 +36,27 @@ public class AccesController {
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> loging(@RequestBody AuthRequest request){
         try{
+            UserModel user = this.service.findByEmail(request.getEmail());
+            if (user == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(new AuthResponse("No user registered with this email", null, null, null));
+            }
             Authentication authentication = this.authenticationManager
                     .authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(),request.getPassword()));
             logger.warn("{}", authentication);
-
-            UserModel user = this.service.findByEmail(request.getEmail());
             String accessToken = this.jwtTokenUtil.generatedToken(user);
             String role = user.getRole().getRole();
-            Integer id = user.getId();
-            AuthResponse response = new AuthResponse(request.getEmail(), accessToken, role, id);
+            UUID uuid = user.getUuid();
+            AuthResponse response = new AuthResponse(request.getEmail(), accessToken, role, uuid);
             return ResponseEntity.ok(response);
         }catch (BadCredentialsException e){
             Authentication authentication = this.authenticationManager
                     .authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
             logger.warn("{}", authentication);
             return  ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new AuthResponse("An error occurred", null, null, null));
         }
     }
 }

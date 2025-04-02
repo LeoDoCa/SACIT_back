@@ -14,8 +14,6 @@ public class PasswordResetToken {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
-    @Column( updatable = false, nullable = false,unique = true)
-    private UUID uuid;
     private String token;
 
     @OneToOne(fetch = FetchType.LAZY)
