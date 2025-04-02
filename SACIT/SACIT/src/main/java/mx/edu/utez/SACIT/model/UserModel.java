@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 @Getter
@@ -25,6 +27,15 @@ public class UserModel {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "role_id", nullable = false)
     private RoleModel role;
+
+    @OneToMany(mappedBy = "creator")
+    private Set<Procedures> createdProcedures = new HashSet<>();
+
+    @OneToMany(mappedBy = "attendant")
+    private Set<Window> attendedWindows = new HashSet<>();
+
+    @OneToMany(mappedBy = "user")
+    private Set<Appointments> appointments = new HashSet<>();
 
     public UserModel(UUID uuid, String name, String lastName, String email, String password, RoleModel role) {
         this.uuid = uuid;
