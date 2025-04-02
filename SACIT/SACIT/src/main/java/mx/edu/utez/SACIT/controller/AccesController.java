@@ -34,7 +34,7 @@ public class AccesController {
     public ResponseEntity<AuthResponse> loging(@RequestBody AuthRequest request){
         try{
             Authentication authentication = this.authenticationManager
-                    .authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
+                    .authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(),request.getPassword()));
             logger.warn("{}", authentication);
 
             UserModel user = this.service.findByEmail(request.getEmail());
