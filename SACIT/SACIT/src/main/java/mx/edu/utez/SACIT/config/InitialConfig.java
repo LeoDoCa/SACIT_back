@@ -10,6 +10,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import java.util.Optional;
+import java.util.UUID;
 
 @Configuration
 @RequiredArgsConstructor
@@ -27,6 +28,7 @@ public class InitialConfig implements CommandLineRunner {
 
         if (adminUserOpt.isEmpty()) {
             UserModel user = new UserModel();
+            user.setUuid(UUID.randomUUID());
             user.setName("Leonardo");
             user.setLastName("Dorantes");
             user.setEmail("admin@gmail.com");

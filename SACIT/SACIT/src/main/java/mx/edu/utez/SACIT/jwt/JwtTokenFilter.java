@@ -5,7 +5,10 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import mx.edu.utez.SACIT.model.UserModel;
+import mx.edu.utez.SACIT.repository.UserRepository;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
@@ -13,13 +16,17 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
 @Component
 public class JwtTokenFilter extends OncePerRequestFilter {
     private final JwtTokenUtil jwtTokenUtil;
-
-    public JwtTokenFilter(JwtTokenUtil jwtTokenUtil) {
+    private final UserRepository repository;
+    public JwtTokenFilter(JwtTokenUtil jwtTokenUtil, UserRepository repository) {
         this.jwtTokenUtil = jwtTokenUtil;
+        this.repository = repository;
     }
 
     @Override
@@ -47,20 +54,23 @@ public class JwtTokenFilter extends OncePerRequestFilter {
         return header.split(" ")[1].trim();
     }
 
-    private void setAuthenticationContext(String token, HttpServletRequest request){
-        UserModel userDetails = getUserDetails(token);
-        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null, null);
-        authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-    }
+private void setAuthenticationContext(String token, HttpServletRequest request) {
+    UserModel userDetails = getUserDetails(token);
+    List<GrantedAuthority> authorities = Collections.singletonList(
+        new SimpleGrantedAuthority(userDetails.getRole().getRole())
+    );
 
-    private UserModel getUserDetails(String token){
-        UserModel userDetails = new UserModel();
-        String [] jwtSubject = jwtTokenUtil.getSubject(token).split(",");
+    UsernamePasswordAuthenticationToken authentication =
+        new UsernamePasswordAuthenticationToken(userDetails, null, authorities);
 
-        userDetails.setId(Integer.parseInt(jwtSubject[0]));
-        userDetails.setEmail(jwtSubject[1]);
+    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+    SecurityContextHolder.getContext().setAuthentication(authentication);
+}
 
-        return userDetails;
-    }
+private UserModel getUserDetails(String token) {
+
+    String[] jwtSubject = jwtTokenUtil.getSubject(token).split(",");
+    Optional<UserModel> userDetails = repository.findById(Integer.parseInt(jwtSubject[0]));
+    return userDetails.orElse(null);
+}
 }

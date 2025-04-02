@@ -32,31 +32,29 @@ public class AccesController {
         this.jwtTokenUtil = jwtTokenUtil;
         this.service = service;
     }
+@PostMapping("/login")
+public ResponseEntity<AuthResponse> login(@RequestBody AuthRequest request) {
+    try {
+        Authentication authentication = authenticationManager
+            .authenticate(new UsernamePasswordAuthenticationToken(
+                request.getEmail(),
+                request.getPassword()
+            ));
 
-    @PostMapping("/login")
-    public ResponseEntity<AuthResponse> loging(@RequestBody AuthRequest request){
-        try{
-            UserModel user = this.service.findByEmail(request.getEmail());
-            if (user == null) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(new AuthResponse("No user registered with this email", null, null, null));
-            }
-            Authentication authentication = this.authenticationManager
-                    .authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(),request.getPassword()));
-            logger.warn("{}", authentication);
-            String accessToken = this.jwtTokenUtil.generatedToken(user);
+        if (authentication.isAuthenticated()) {
+            UserModel user = service.findByEmail(request.getEmail());
+            String accessToken = jwtTokenUtil.generatedToken(user);
             String role = user.getRole().getRole();
             UUID uuid = user.getUuid();
-            AuthResponse response = new AuthResponse(request.getEmail(), accessToken, role, uuid);
-            return ResponseEntity.ok(response);
-        }catch (BadCredentialsException e){
-            Authentication authentication = this.authenticationManager
-                    .authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
-            logger.warn("{}", authentication);
-            return  ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new AuthResponse("An error occurred", null, null, null));
+
+            logger.info("User {} logged in successfully", request.getEmail());
+            return ResponseEntity.ok(new AuthResponse(accessToken, role));
         }
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    } catch (BadCredentialsException e) {
+        logger.error("Login failed for user {}: {}", request.getEmail(), e.getMessage());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
+}
 }
