@@ -36,6 +36,15 @@ public class InitialConfig implements CommandLineRunner {
             user.setRole(adminRole);
             userRepository.save(user);
         }
+
+        UserModel user = new UserModel();
+        user.setUuid(UUID.randomUUID());
+        user.setName("Daniel");
+        user.setLastName("Castañeda");
+        user.setEmail("20223tn049@utez.edu.mx");
+        user.setPassword(passwordEncoder.encode("Leo1234$"));
+        user.setRole(userRole);
+        userRepository.save(user);
     }
 
     private RoleModel getOrCreateRole(String roleName) {

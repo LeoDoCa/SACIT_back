@@ -45,10 +45,11 @@ public ResponseEntity<AuthResponse> login(@RequestBody AuthRequest request) {
             UserModel user = service.findByEmail(request.getEmail());
             String accessToken = jwtTokenUtil.generatedToken(user);
             String role = user.getRole().getRole();
-            UUID uuid = user.getUuid();
+            String name = user.getName();
+            String lastname = user.getLastName();
 
             logger.info("User {} logged in successfully", request.getEmail());
-            return ResponseEntity.ok(new AuthResponse(accessToken, role));
+            return ResponseEntity.ok(new AuthResponse(name, lastname, request.getEmail(), accessToken, role));
         }
 
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
