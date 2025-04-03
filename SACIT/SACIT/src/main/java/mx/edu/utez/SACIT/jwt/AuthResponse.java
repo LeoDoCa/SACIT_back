@@ -12,13 +12,10 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 public class AuthResponse {
+    private String name;
+    private String lastName;
     private String email;
     private String accessToken;
     private String role;
-    private UUID uuid;
 
-    public AuthResponse(String accessToken, String role) {
-        this.accessToken = accessToken;
-        this.role = role;
-    }
 }
