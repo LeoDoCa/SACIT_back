@@ -39,19 +39,19 @@ public class Security {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.csrf(AbstractHttpConfigurer::disable)
+        http
+                .cors(cors -> {})
+                .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(exception -> exception
-                        .authenticationEntryPoint(
-                                (request, response, ex) -> response.sendError(HttpServletResponse.SC_UNAUTHORIZED)));
+                        .authenticationEntryPoint((request, response, ex) ->
+                                response.sendError(HttpServletResponse.SC_UNAUTHORIZED)))
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        .requestMatchers("/api/login", "/api/register", "/api/recover-password-email", "/api/reset-password/{token}", "/api/validate-token/**").permitAll()
+                        .anyRequest().authenticated());
+
         http.addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class);
-        http.authorizeHttpRequests(authorize -> authorize
-                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                .requestMatchers("/api/login").permitAll()
-                .requestMatchers("/api/register").permitAll()
-                .requestMatchers("/api/recover-password-email").permitAll()
-                .requestMatchers("/api/reset-password/{token}").permitAll()
-                .anyRequest().authenticated());
         return http.build();
     }
 }
