@@ -53,6 +53,14 @@ public class UserController {
     @PostMapping("/register")
     public ResponseEntity<Object> createUser(@RequestBody UserModel request) {
         try {
+            UserModel existingUser = userService.findByEmail(request.getEmail());
+            if (existingUser != null) {
+                return Utilities.generateResponse(
+                        HttpStatus.CONFLICT,
+                        "El correo electrónico ya está registrado. Por favor utilice otro."
+                );
+            }
+
             String defaultRoleName = "ROLE_USER";
             RoleModel defaultRole = repository.findByRole(defaultRoleName)
                     .orElseThrow(() -> new RuntimeException("Default role not found"));
@@ -62,7 +70,7 @@ public class UserController {
             this.userService.save(request);
 
             String title = "Bienvenido " + request.getName();
-            String subject = "¡Te has registrado exitosamente en el sistema DOCES!";
+            String subject = "¡Te has registrado exitosamente en el sistema SACIT!";
             String message =
                     "<h2>¡Te damos la más cordial bienvenida al sistema SACIT!</h2>" +
                             "<p>Tu registro se ha completado exitosamente. Ahora podrás acceder a una plataforma donde gestionarás de manera " +
@@ -112,7 +120,7 @@ public class UserController {
             String token = UUID.randomUUID().toString();
             userService.savePasswordResetToken(user, token);
 
-            String resetLink = "http://localhost:8012/reset-password/" + token;
+            String resetLink = "http://localhost:5173/reset-password/" + token;
             emailService.sendSimpleEmail(
                     email,
                     "Recupera tu contraseña",
@@ -128,9 +136,12 @@ public class UserController {
     @GetMapping("/validate-token")
     public ResponseEntity<Object> validateResetToken(@RequestParam String token) {
         PasswordResetToken resetToken = passwordRepository.findByToken(token);
-        if (resetToken == null || resetToken.getExpiryDate().isBefore(LocalDateTime.now())) {
+
+        if (resetToken == null || resetToken.getExpiryDate() == null || resetToken.getExpiryDate().isBefore(LocalDateTime.now())) {
+            if (resetToken != null) passwordRepository.delete(resetToken);
             return new ResponseEntity<>(Utilities.generateResponse(HttpStatus.BAD_REQUEST, "Token inválido o expirado"), HttpStatus.BAD_REQUEST);
         }
+
         return new ResponseEntity<>(Utilities.generateResponse(HttpStatus.OK, "Token válido"), HttpStatus.OK);
     }
 
