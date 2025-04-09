@@ -18,22 +18,25 @@ public class RequiredDocuments {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-    @Column( updatable = false, nullable = false,unique = true)
+    @Column(updatable = false, nullable = false, unique = true)
     private UUID uuid;
 
     private String name;
     private String description;
     private Boolean mandatory;
 
-   @ManyToOne
-   @JoinColumn(name = "procedure_id")
-   private Procedures procedure;
+    @ManyToOne
+    @JoinColumn(name = "procedure_id", nullable = false)
+    private Procedures procedure;
 
-   @ManyToMany
-   @JoinTable(
-       name = "required_uploaded_documents",
-       joinColumns = @JoinColumn(name = "required_document_id"),
-       inverseJoinColumns = @JoinColumn(name = "uploaded_document_id")
-   )
-   private Set<UploadedDocuments> uploadedDocuments = new HashSet<>();
+    @ManyToMany
+    @JoinTable(name = "required_uploaded_documents", joinColumns = @JoinColumn(name = "required_document_id"), inverseJoinColumns = @JoinColumn(name = "uploaded_document_id"))
+    private Set<UploadedDocuments> uploadedDocuments = new HashSet<>();
+
+    @PrePersist
+    public void generateUuid() {
+        if (uuid == null) {
+            uuid = UUID.randomUUID();
+        }
+    }
 }
