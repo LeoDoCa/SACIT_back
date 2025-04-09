@@ -33,5 +33,5 @@ public class UploadedDocuments {
     private Appointments appointment;
 
     @ManyToMany(mappedBy = "uploadedDocuments")
-    private Set<RequieredDocuments> requiredDocuments = new HashSet<>();
+    private Set<RequiredDocuments> requiredDocuments = new HashSet<>();
 }
