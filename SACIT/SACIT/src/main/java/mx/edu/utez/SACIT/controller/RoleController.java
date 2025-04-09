@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api")
@@ -26,21 +27,21 @@ public class RoleController {
         return roleService.getAll();
     }
 
-    @GetMapping("/role/{id}")
-    public ResponseEntity getById(@PathVariable Integer id){
-        return roleService.findById(id)
+    @GetMapping("/role/{uuid}")
+    public ResponseEntity getByUuid(@PathVariable UUID uuid){
+        return roleService.findByUuid(uuid)
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
     @PostMapping("/role")
     public ResponseEntity save(@RequestBody RoleModel role){
         this.roleService.saveRole(role);
-        return Utilities.generateResponse(HttpStatus.OK, "Record created successfully.");
+        return Utilities.generateResponse(HttpStatus.OK, "Record created successfully.","200");
     }
 
-    @PutMapping("/role/{id}")
-    public ResponseEntity<RoleModel> update (@PathVariable Integer id, @RequestBody RoleModel role){
-        return roleService.findById(id)
+    @PutMapping("/role/{uuid}")
+    public ResponseEntity<RoleModel> update (@PathVariable UUID uuid, @RequestBody RoleModel role){
+        return roleService.findByUuid(uuid)
                 .map(roleObj ->{
                     roleObj.setRole(role.getRole());
                     return ResponseEntity.ok(roleService.saveRole(roleObj));
@@ -48,11 +49,11 @@ public class RoleController {
                 .orElseGet(()->ResponseEntity.notFound().build());
     }
 
-    @DeleteMapping("/role/{id}")
-    public ResponseEntity<RoleModel> delete(@PathVariable Integer id){
-        return roleService.findById(id)
+    @DeleteMapping("/role/{uuid}")
+    public ResponseEntity<RoleModel> delete(@PathVariable UUID uuid){
+        return roleService. findByUuid(uuid)
                 .map(role -> {
-                    roleService.delete(id);
+                    roleService.delete(uuid);
                     return ResponseEntity.ok(role);
                 })
                 .orElseGet(() -> ResponseEntity.notFound().build());

@@ -10,12 +10,13 @@ import java.util.Map;
 public class Utilities {
     private Utilities(){throw new UnsupportedOperationException("Utility class");}
 
-    public static ResponseEntity<Object> generateResponse(HttpStatus status,String mssage){
+    public static ResponseEntity<Object> generateResponse(HttpStatus status,String mssage, String actionCode){
         Map<String,Object> map = new HashMap<>();
         try{
             map.put("date", new Date());
             map.put("status", status.value());
             map.put("message", mssage);
+            map.put("actionCode", actionCode);
             return  new ResponseEntity<>(map,status);
         }catch (Exception e){
             map.clear();

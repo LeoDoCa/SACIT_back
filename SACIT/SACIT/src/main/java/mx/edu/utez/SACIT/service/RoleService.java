@@ -2,6 +2,7 @@ package mx.edu.utez.SACIT.service;
 
 import jakarta.transaction.Transactional;
 import mx.edu.utez.SACIT.model.RoleModel;
+import mx.edu.utez.SACIT.model.UserModel;
 import mx.edu.utez.SACIT.repository.RoleRepository;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.domain.Sort;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @Primary
@@ -23,14 +25,17 @@ public class RoleService {
         return this.repository.findAll(Sort.by("id").descending());
     }
 
-public Optional<RoleModel> findById(Integer id) {
-        return repository.findById(id);
+public Optional<RoleModel> findByUuid(UUID uuid) {
+        return repository.findByUuid(uuid);
 }
     public RoleModel saveRole (RoleModel role){
         return repository.save(role);
     }
 
-    public void delete(Integer id) {
-        this.repository.deleteById(id);
+    public void delete(UUID uuid) {
+        Optional<RoleModel> optional = repository.findByUuid(uuid);
+        if (optional.isPresent()) {
+            this.repository.delete(optional.get());
+        }
     }
 }

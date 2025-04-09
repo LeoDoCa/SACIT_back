@@ -57,7 +57,7 @@ public class UserController {
             if (existingUser != null) {
                 return Utilities.generateResponse(
                         HttpStatus.CONFLICT,
-                        "El correo electrónico ya está registrado. Por favor utilice otro."
+                        "El correo electrónico ya está registrado. Por favor utilice otro.","409"
                 );
             }
 
@@ -79,9 +79,9 @@ public class UserController {
                             "<h3>Atentamente,</h3>" +
                             "<h3>El equipo de SACIT</h3>";
             emailService.sendSimpleEmail(request.getEmail(), title, subject, message);
-            return Utilities.generateResponse(HttpStatus.OK, "Record created successfully.");
+            return Utilities.generateResponse(HttpStatus.OK, "Record created successfully.","200");
         } catch (Exception e) {
-            return Utilities.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR);
+            return Utilities.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR,"500");
         }
     }
 
@@ -90,17 +90,17 @@ public class UserController {
         try {
             UserModel user = this.getByUuid(uuid);
             if (user == null) {
-                return Utilities.generateResponse(HttpStatus.BAD_REQUEST, RECORD_NOT_FOUND);
+                return Utilities.generateResponse(HttpStatus.BAD_REQUEST, RECORD_NOT_FOUND,"404");
             } else {
                 user.setName(request.getName());
                 user.setLastName(request.getLastName());
                 user.setEmail(request.getEmail());
                 user.setRole(request.getRole());
                 this.userService.save(user);
-                return Utilities.generateResponse(HttpStatus.OK, "Record updated successfully.");
+                return Utilities.generateResponse(HttpStatus.OK, "Record updated successfully.","200");
             }
         } catch (Exception e) {
-            return Utilities.generateResponse(HttpStatus.BAD_REQUEST, INTERNAL_SERVER_ERROR);
+            return Utilities.generateResponse(HttpStatus.BAD_REQUEST, INTERNAL_SERVER_ERROR,"500");
         }
     }
 
@@ -110,11 +110,11 @@ public class UserController {
         try {
             UserModel user = userService.findByEmail(email);
             if (user == null) {
-                return Utilities.generateResponse(HttpStatus.NOT_FOUND, RECORD_NOT_FOUND);
+                return Utilities.generateResponse(HttpStatus.NOT_FOUND, RECORD_NOT_FOUND, "404");
             }
             PasswordResetToken existingToken = passwordRepository.findByUserAndExpiryDateAfter(user, LocalDateTime.now());
             if (existingToken != null) {
-                return Utilities.generateResponse(HttpStatus.BAD_REQUEST, "Active password reset token already exists");
+                return Utilities.generateResponse(HttpStatus.BAD_REQUEST, "Active password reset token already exists", "400");
             }
 
             String token = UUID.randomUUID().toString();
@@ -127,9 +127,9 @@ public class UserController {
                     "Recuperación de contraseña",
                     "Haz clic en el enlace para recuperar tu contraseña: <a href='" + resetLink + "'>Recuperar contraseña</a>"
             );
-            return new ResponseEntity<>(Utilities.generateResponse(HttpStatus.OK, "Token: " + token), HttpStatus.OK);
+            return new ResponseEntity<>(Utilities.generateResponse(HttpStatus.OK, "Token: " + token, "200"), HttpStatus.OK);
         } catch (Exception e) {
-            return new ResponseEntity<>(Utilities.generateResponse(HttpStatus.BAD_REQUEST, INTERNAL_SERVER_ERROR), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(Utilities.generateResponse(HttpStatus.BAD_REQUEST, INTERNAL_SERVER_ERROR,"500"), HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -139,10 +139,10 @@ public class UserController {
 
         if (resetToken == null || resetToken.getExpiryDate() == null || resetToken.getExpiryDate().isBefore(LocalDateTime.now())) {
             if (resetToken != null) passwordRepository.delete(resetToken);
-            return new ResponseEntity<>(Utilities.generateResponse(HttpStatus.BAD_REQUEST, "Token inválido o expirado"), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(Utilities.generateResponse(HttpStatus.BAD_REQUEST, "Token inválido o expirado","400"), HttpStatus.BAD_REQUEST);
         }
 
-        return new ResponseEntity<>(Utilities.generateResponse(HttpStatus.OK, "Token válido"), HttpStatus.OK);
+        return new ResponseEntity<>(Utilities.generateResponse(HttpStatus.OK, "Token válido","200"), HttpStatus.OK);
     }
 
     @PostMapping("/reset-password/{token}")
@@ -151,17 +151,17 @@ public class UserController {
             String newPassword = request.get("password");
             PasswordResetToken resetToken = passwordRepository.findByToken(token);
             if (resetToken == null || resetToken.getExpiryDate().isBefore(LocalDateTime.now())) {
-                return new ResponseEntity<>(Utilities.generateResponse(HttpStatus.BAD_REQUEST, INTERNAL_SERVER_ERROR),
+                return new ResponseEntity<>(Utilities.generateResponse(HttpStatus.BAD_REQUEST, INTERNAL_SERVER_ERROR,"500"),
                         HttpStatus.BAD_REQUEST);
             }
             UserModel user = resetToken.getUser();
             user.setPassword(passwordEncoder.encode(newPassword));
             passwordRepository.delete(resetToken);
-            return new ResponseEntity<>(Utilities.generateResponse(HttpStatus.OK, "Password reset successfully"),
+            return new ResponseEntity<>(Utilities.generateResponse(HttpStatus.OK, "Password reset successfully","200"),
                     HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(
-                    Utilities.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR),
+                    Utilities.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR,"500"),
                     HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -171,13 +171,13 @@ public class UserController {
         try {
             UserModel user = this.getByUuid(uuid);
             if (user == null) {
-                return Utilities.generateResponse(HttpStatus.BAD_REQUEST, RECORD_NOT_FOUND);
+                return Utilities.generateResponse(HttpStatus.BAD_REQUEST, RECORD_NOT_FOUND, "404");
             } else {
                 this.userService.delete(uuid);
-                return Utilities.generateResponse(HttpStatus.OK, "Record deleted successfully.");
+                return Utilities.generateResponse(HttpStatus.OK, "Record deleted successfully.", "200");
             }
         } catch (Exception e) {
-            return Utilities.generateResponse(HttpStatus.BAD_REQUEST, INTERNAL_SERVER_ERROR);
+            return Utilities.generateResponse(HttpStatus.BAD_REQUEST, INTERNAL_SERVER_ERROR, "500");
         }
     }
 }
