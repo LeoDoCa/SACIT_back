@@ -37,7 +37,7 @@ public class Procedures {
     @JoinColumn(name = "creator_id")
     private UserModel creator;
 
-    @OneToMany(mappedBy = "procedure")
+    @OneToMany(mappedBy = "procedure", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<RequiredDocuments> requieredDocuments = new HashSet<>();
 
     @OneToMany(mappedBy = "procedure")
