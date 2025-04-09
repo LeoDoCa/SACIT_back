@@ -20,4 +20,3 @@ public class AppointmentDto {
     private String cancellationReason;
     private String status;
 }
-

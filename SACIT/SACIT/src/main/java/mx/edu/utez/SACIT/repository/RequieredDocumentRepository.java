@@ -7,4 +7,3 @@ import java.util.UUID;
 public interface RequieredDocumentRepository extends JpaRepository<RequieredDocuments, Integer> {
     RequieredDocuments findByUuid(UUID uuid);
 }
-
