@@ -1,27 +1,35 @@
 package mx.edu.utez.SACIT.service;
 
 import jakarta.transaction.Transactional;
-import mx.edu.utez.SACIT.model.RoleModel;
+
+import mx.edu.utez.SACIT.dto.WindowDTO;
+import mx.edu.utez.SACIT.model.UserModel;
 import mx.edu.utez.SACIT.model.Window;
+import mx.edu.utez.SACIT.repository.UserRepository;
 import mx.edu.utez.SACIT.repository.WindowRepository;
+
 import mx.edu.utez.SACIT.utils.Utilities;
 import org.springframework.context.annotation.Primary;
+
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+
+
 @Service
 @Primary
 @Transactional
 public class WindowService {
     private final WindowRepository repository;
+    private final UserRepository userRepository;
 
-    public WindowService(WindowRepository repository) {
+    public WindowService(WindowRepository repository, UserRepository userRepository) {
         this.repository = repository;
+        this.userRepository = userRepository;
     }
 
     public List<Window> getAll() {
@@ -32,21 +40,55 @@ public class WindowService {
         return repository.findByUuid(uuid);
     }
 
-    public void save(Window window){
+    public void save(WindowDTO dto) {
+        UserModel attendant = userRepository.findByUuid(dto.getAttendantUuid())
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-            RoleModel attendet = window.getAttendant().getRole();
-            if (attendet.getId() == 3 || attendet.getRole().equals("ROLE_WINDOW")){
-                repository.save(window);
-            }
+        if (attendant.getRole().getId() == 3 || "ROLE_WINDOW".equals(attendant.getRole().getRole())) {
 
 
-    }
+            Window window = new Window();
+            window.setStatus(dto.getStatus());
+            window.setWindowNumber(dto.getWindowNumber());
+            window.setAttendant(attendant);
 
-    public void delete(UUID uuid) {
+
+            repository.save(window);
+        } else {
+            throw new RuntimeException("El usuario no tiene el rol adecuado para ser atendente.");
+        }
+
+
+
+        }
+
+
+
+
+        public void delete (UUID uuid) {
         Optional<Window> optional = repository.findByUuid(uuid);
         if (optional.isPresent()) {
-            this.repository.delete(optional.get());
+            repository.delete(optional.get());
+        } else {
+            throw new IllegalArgumentException("Window not found");
         }
     }
 
-}
+    public void update(Window dto) {
+        UserModel attendant = userRepository.findByUuid(dto.getAttendant().getUuid())
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        if (attendant.getRole().getId() == 3 || "ROLE_WINDOW".equals(attendant.getRole().getRole())) {
+
+
+            Window window = new Window();
+            window.setStatus(dto.getStatus());
+            window.setWindowNumber(dto.getWindowNumber());
+            window.setAttendant(attendant);
+
+
+            repository.save(window);
+        } else {
+            throw new RuntimeException("El usuario no tiene el rol adecuado para ser atendente.");
+        }
+    }}
