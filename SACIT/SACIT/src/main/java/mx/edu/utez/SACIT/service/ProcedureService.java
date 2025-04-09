@@ -18,14 +18,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 @Service
 @Transactional
 public class ProcedureService {
 
-    private static final Logger logger = LoggerFactory.getLogger(ProcedureService.class);
 
     @Autowired
     private ProcedureRepository procedureRepository;
