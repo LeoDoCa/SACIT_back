@@ -25,8 +25,8 @@ public class Procedures {
     private String description;
     private Double cost;
 
-    @Column(name = "stimated_time")
-    private Integer stimatedTime;
+    @Column(name = "estimated_time")
+    private Integer estimatedTime;
 
     @Column(name = "creation_date")
     private String creationDate;
@@ -38,7 +38,7 @@ public class Procedures {
     private UserModel creator;
 
     @OneToMany(mappedBy = "procedure")
-    private Set<RequieredDocuments> requieredDocuments = new HashSet<>();
+    private Set<RequiredDocuments> requieredDocuments = new HashSet<>();
 
     @OneToMany(mappedBy = "procedure")
     private Set<Appointments> appointments = new HashSet<>();

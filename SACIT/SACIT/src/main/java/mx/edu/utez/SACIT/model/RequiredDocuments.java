@@ -14,7 +14,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @Entity
 @Table(name = "requiered_documents")
-public class RequieredDocuments {
+public class RequiredDocuments {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
