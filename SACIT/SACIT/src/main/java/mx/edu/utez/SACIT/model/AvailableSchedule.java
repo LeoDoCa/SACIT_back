@@ -33,4 +33,11 @@ public class AvailableSchedule {
     @ManyToOne
     @JoinColumn(name = "window_id")
     private Window window;
+
+    @PrePersist
+    public void generateUuid() {
+        if (uuid == null) {
+            uuid = UUID.randomUUID();
+        }
+    }
 }
