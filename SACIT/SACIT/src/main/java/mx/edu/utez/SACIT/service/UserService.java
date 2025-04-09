@@ -68,4 +68,8 @@ public class UserService {
         passwordRepository.save(resetToken);
     }
 
+    public List<UserModel> getUsersByRoleName(String roleName) {
+        return repository.findByRole_Role(roleName);
+    }
+
 }
