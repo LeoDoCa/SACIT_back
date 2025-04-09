@@ -1,9 +1,12 @@
 package mx.edu.utez.SACIT.controller;
 
+import mx.edu.utez.SACIT.dto.WindowDTO;
 import mx.edu.utez.SACIT.model.Window;
 import mx.edu.utez.SACIT.repository.WindowRepository;
 import mx.edu.utez.SACIT.service.WindowService;
 import mx.edu.utez.SACIT.utils.Utilities;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,14 +26,14 @@ public class WindowController {
     private static final String NOTFOUND_CODE = "404";
     private static final String BADREQUEST_CODE = "400";
     private static final String INTERNAL_SERVER_ERROR_CODE = "500";
-
+    private final Logger logger = LogManager.getLogger(WindowController.class);
 
     public WindowController( WindowService service) {
         this.service = service;
 
     }
 
-    @GetMapping("/windows")
+    @GetMapping("/window")
     public List<Window> windows(){
       return  service.getAll();
     }
@@ -44,26 +47,29 @@ public class WindowController {
     }
 
     @PostMapping("/window/")
-    public ResponseEntity save(@RequestBody Window window, Sort sort){
+    public ResponseEntity save(@RequestBody WindowDTO window){
         try{
              if (window != null){
+
                  service.save(window);
                  return Utilities.generateResponse(HttpStatus.OK, "Record created successfully.",SUCCESS_CODE);
              }
+
              return Utilities.generateResponse(HttpStatus.BAD_REQUEST, "All fields are required.", BADREQUEST_CODE);
         }catch (Exception e){
+
             return Utilities.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR_CODE);
         }
     }
 
     @PutMapping("/window/{uuid}")
-    public ResponseEntity<Object> update(@PathVariable UUID uuid,@RequestBody Window window){
-        return  service.findByUuid(uuid)
+    public ResponseEntity<Object> update(@PathVariable UUID uuid,@RequestBody WindowDTO window){
+        return service.findByUuid(uuid)
                 .map(window1 -> {
                     window1.setWindowNumber(window.getWindowNumber());
-                    window1.setAttendant(window.getAttendant());
                     window1.setStatus(window.getStatus());
-                    service.save(window1);
+                    window1.setUuid(window.getAttendantUuid());
+                    service.update(window1);
                     return Utilities.generateResponse(HttpStatus.OK, "Record updated successfully.", SUCCESS_CODE);
                 })
                 .orElseGet(() ->

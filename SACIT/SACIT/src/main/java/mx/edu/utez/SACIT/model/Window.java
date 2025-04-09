@@ -22,6 +22,7 @@ public class Window {
     private UUID uuid;
 
     private String status;
+
     @Column(name = "window_number")
     private Integer windowNumber;
 
@@ -37,5 +38,18 @@ public class Window {
 
     @OneToMany(mappedBy = "window")
     private Set<Appointments> appointments = new HashSet<>();
+
+    @PrePersist
+    public void generateUuid() {
+        if (uuid == null) {
+            uuid = UUID.randomUUID();
+        }
+    }
+
+    public Window(UUID uuid) {
+        this.uuid = uuid;
+    }
+
+
 
 }

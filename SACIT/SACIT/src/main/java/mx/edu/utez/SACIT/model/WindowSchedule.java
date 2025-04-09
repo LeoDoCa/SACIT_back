@@ -32,4 +32,15 @@ public class WindowSchedule {
     @ManyToOne
     @JoinColumn(name = "window_id")
     private Window window;
+
+    @PrePersist
+    public void generateUuid() {
+        if (uuid == null) {
+            uuid = UUID.randomUUID();
+        }
+    }
+
+    public void setWindow(UUID windowUuid) {
+
+    }
 }

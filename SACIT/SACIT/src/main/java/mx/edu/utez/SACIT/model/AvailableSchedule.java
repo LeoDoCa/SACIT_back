@@ -29,6 +29,7 @@ public class AvailableSchedule {
     private LocalTime endTime;
 
     private Boolean available;
+
     @ManyToOne
     @JoinColumn(name = "window_id")
     private Window window;
