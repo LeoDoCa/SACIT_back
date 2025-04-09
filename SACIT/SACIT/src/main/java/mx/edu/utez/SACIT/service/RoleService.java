@@ -25,9 +25,9 @@ public class RoleService {
         return this.repository.findAll(Sort.by("id").descending());
     }
 
-public Optional<RoleModel> findByUuid(UUID uuid) {
+    public Optional<RoleModel> findByUuid(UUID uuid) {
         return repository.findByUuid(uuid);
-}
+    }
     public RoleModel saveRole (RoleModel role){
         return repository.save(role);
     }
