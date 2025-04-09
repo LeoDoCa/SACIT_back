@@ -21,6 +21,8 @@ public class EmailService implements EmailRepository {
     private final JavaMailSender javaMailSender;
     private final TemplateEngine templateEngine;
     public static final String INTERNAL_SERVER_ERROR = "An internal server error occurred.";
+    private static final String SUCCESS_CODE = "200";
+    private static final String INTERNAL_SERVER_ERROR_CODE = "500";
 
     public ResponseEntity<ApiResponse> sendEmail(String toEmail, String subject, String title, String messageContent,
                                                  int type, MultipartFile file, String name) throws MessagingException {
@@ -61,10 +63,10 @@ public class EmailService implements EmailRepository {
             helper.setText(personalizedMessage, true);
             helper.setFrom("sacit3mail@gmail.com");
             javaMailSender.send(message);
-            new ResponseEntity<>(Utilities.generateResponse(HttpStatus.OK, "Correo enviado correctamente"),
+            new ResponseEntity<>(Utilities.generateResponse(HttpStatus.OK, "Correo enviado correctamente", SUCCESS_CODE),
                     HttpStatus.OK);
         } catch (Exception e) {
-            new ResponseEntity<>(Utilities.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR),
+            new ResponseEntity<>(Utilities.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR_CODE),
                     HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }

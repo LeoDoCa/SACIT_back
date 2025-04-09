@@ -23,6 +23,7 @@ public class InitialConfig implements CommandLineRunner {
     public void run(String... args) throws Exception {
         RoleModel adminRole = getOrCreateRole("ROLE_ADMIN");
         RoleModel userRole = getOrCreateRole("ROLE_USER");
+        RoleModel windowRole = getOrCreateRole("ROLE_WINDOW");
 
         Optional<UserModel> adminUserOpt = Optional.ofNullable(userRepository.findByEmail("admin@gmail.com"));
 
@@ -45,6 +46,15 @@ public class InitialConfig implements CommandLineRunner {
         user.setPassword(passwordEncoder.encode("Leo1234$"));
         user.setRole(userRole);
         userRepository.save(user);
+
+        UserModel userWindow = new UserModel();
+        userWindow.setUuid(UUID.randomUUID());
+        userWindow.setName("Moises");
+        userWindow.setLastName("Gonzalez");
+        userWindow.setEmail("20223tn055@utez.edu.mx");
+        userWindow.setPassword(passwordEncoder.encode("Moy1234$"));
+        userWindow.setRole(windowRole);
+        userRepository.save(userWindow);
     }
 
     private RoleModel getOrCreateRole(String roleName) {
@@ -55,6 +65,7 @@ public class InitialConfig implements CommandLineRunner {
         } else {
             RoleModel newRole = new RoleModel();
             newRole.setRole(roleName);
+            newRole.setUuid(UUID.randomUUID());
             return roleRepository.save(newRole);
         }
     }
