@@ -8,10 +8,10 @@ import mx.edu.utez.SACIT.model.Window;
 import mx.edu.utez.SACIT.repository.UserRepository;
 import mx.edu.utez.SACIT.repository.WindowRepository;
 
-import mx.edu.utez.SACIT.utils.Utilities;
+
 import org.springframework.context.annotation.Primary;
 
-import org.springframework.http.HttpStatus;
+
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -45,22 +45,20 @@ public class WindowService {
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
         if (attendant.getRole().getId() == 3 || "ROLE_WINDOW".equals(attendant.getRole().getRole())) {
-
-
+            Integer nextWindowNumber = repository.findMaxWindowNumber().orElse(0) + 1;
             Window window = new Window();
             window.setStatus(dto.getStatus());
-            window.setWindowNumber(dto.getWindowNumber());
             window.setAttendant(attendant);
-
-
+            window.setWindowNumber(nextWindowNumber);
             repository.save(window);
         } else {
             throw new RuntimeException("El usuario no tiene el rol adecuado para ser atendente.");
         }
+    }
 
 
 
-        }
+
 
 
 

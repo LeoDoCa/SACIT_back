@@ -49,44 +49,6 @@ public class WindowScheduleController {
         }
     }
 
-    @PutMapping("/windowsschedule/{uuid}")
-    public ResponseEntity<Object> update(@PathVariable UUID uuid, @RequestBody WindowScheduleDTO windowSchedule) {
-        try {
-            if (windowSchedule != null) {
-                // Validar los valores del DTO antes de realizar cualquier acción
-                if (windowSchedule.getDayWeek() < 1 || windowSchedule.getDayWeek() > 5) {
-                    return Utilities.generateResponse(HttpStatus.BAD_REQUEST, "Day of the week must be between 1 and 5", "400");
-                }
-                if (windowSchedule.getStartTime().isAfter(windowSchedule.getEndTime())) {
-                    return Utilities.generateResponse(HttpStatus.BAD_REQUEST, "Start time must be before end time", "400");
-                }
-
-                LocalTime minTime = LocalTime.of(9, 0);
-                LocalTime maxTime = LocalTime.of(15, 0);
-                if (windowSchedule.getStartTime().isBefore(minTime) || windowSchedule.getEndTime().isAfter(maxTime)) {
-                    return Utilities.generateResponse(HttpStatus.BAD_REQUEST, "Start time must be after 9:00 and end time must be before 15:00", "400");
-                }
-
-                return windowsScheduleService.findByUuuid(uuid)
-                        .map(windowSchedule1 -> {
-
-                            windowSchedule1.setDayWeek(windowSchedule.getDayWeek());
-                            windowSchedule1.setStartTime(windowSchedule.getStartTime());
-                            windowSchedule1.setEndTime(windowSchedule.getEndTime());
-                            windowSchedule1.setWindow(windowSchedule.getWindowUuid());
-                            windowsScheduleService.save(windowSchedule1);
-                            return Utilities.generateResponse(HttpStatus.OK, "Record updated successfully.", "200");
-                        })
-                        .orElseGet(() ->
-                                Utilities.generateResponse(HttpStatus.NOT_FOUND, "Record not found", "404"));
-            }
-            return Utilities.generateResponse(HttpStatus.BAD_REQUEST, "All fields are required.", "400");
-        } catch (IllegalArgumentException e) {
-            return Utilities.generateResponse(HttpStatus.BAD_REQUEST, e.getMessage(), "400");
-        } catch (Exception e) {
-            return Utilities.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error", "500");
-        }
-    }
 
     @DeleteMapping("/windowsschedule/{uuid}")
     public ResponseEntity<Object> delete(@PathVariable UUID uuid){

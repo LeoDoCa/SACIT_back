@@ -40,7 +40,5 @@ public class WindowSchedule {
         }
     }
 
-    public void setWindow(UUID windowUuid) {
 
-    }
 }

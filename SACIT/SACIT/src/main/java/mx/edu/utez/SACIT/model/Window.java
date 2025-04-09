@@ -23,7 +23,7 @@ public class Window {
 
     private String status;
 
-    @Column(name = "window_number")
+    @Column(name = "window_number", unique = true, updatable = false)
     private Integer windowNumber;
 
     @ManyToOne

@@ -33,31 +33,33 @@ public class WindowsScheduleService {
        return windowScheduleRepository.findByUuid(uuid);
     }
 
-    public WindowSchedule save(WindowSchedule dto){
-        if (dto.getDayWeek()<1 || dto.getDayWeek()>5){
-             throw new IllegalArgumentException("Day of the week must be between 1 and 5");
-
+    public WindowSchedule save(WindowScheduleDTO dto) {
+        if (dto.getDayWeek() < 1 || dto.getDayWeek() > 5) {
+            throw new IllegalArgumentException("Day of the week must be between 1 and 5");
         }
-        if (dto.getStartTime().isAfter(dto.getEndTime())){
+
+        if (dto.getStartTime().isAfter(dto.getEndTime())) {
             throw new IllegalArgumentException("Start time must be before end time");
         }
 
-        LocalTime minTime = LocalTime.of(9,0);
-        LocalTime maxTime = LocalTime.of(15,0);
-        if (dto.getStartTime().isBefore(minTime) || dto.getEndTime().isAfter(maxTime)){
+        LocalTime minTime = LocalTime.of(9, 0);
+        LocalTime maxTime = LocalTime.of(15, 0);
+        if (dto.getStartTime().isBefore(minTime) || dto.getEndTime().isAfter(maxTime)) {
             throw new IllegalArgumentException("Start time must be after 9:00 and end time must be before 15:00");
         }
 
-        Window window = windowRepository.findByUuid(dto.getUuid())
+        Window window = windowRepository.findByUuid(dto.getWindowUuid())
                 .orElseThrow(() -> new IllegalArgumentException("Window not found"));
 
         WindowSchedule windowSchedule = new WindowSchedule();
         windowSchedule.setDayWeek(dto.getDayWeek());
         windowSchedule.setStartTime(dto.getStartTime());
         windowSchedule.setEndTime(dto.getEndTime());
-        windowSchedule.setWindow(window.getUuid());
-return windowScheduleRepository.save(windowSchedule);
+        windowSchedule.setWindow(window);
+
+        return windowScheduleRepository.save(windowSchedule);
     }
+
 
     public WindowSchedule saved(WindowScheduleDTO dto){
         if (dto.getDayWeek()<1 || dto.getDayWeek()>5){
@@ -81,7 +83,7 @@ return windowScheduleRepository.save(windowSchedule);
         windowSchedule.setDayWeek(dto.getDayWeek());
         windowSchedule.setStartTime(dto.getStartTime());
         windowSchedule.setEndTime(dto.getEndTime());
-        windowSchedule.setWindow(window.getUuid());
+        windowSchedule.setWindow(window);
         return windowScheduleRepository.save(windowSchedule);
     }
 

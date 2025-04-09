@@ -2,12 +2,12 @@ package mx.edu.utez.SACIT.controller;
 
 import mx.edu.utez.SACIT.dto.WindowDTO;
 import mx.edu.utez.SACIT.model.Window;
-import mx.edu.utez.SACIT.repository.WindowRepository;
+
 import mx.edu.utez.SACIT.service.WindowService;
 import mx.edu.utez.SACIT.utils.Utilities;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.data.domain.Sort;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
