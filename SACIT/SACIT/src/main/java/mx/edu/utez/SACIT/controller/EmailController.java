@@ -5,6 +5,8 @@ import jakarta.servlet.annotation.MultipartConfig;
 import lombok.AllArgsConstructor;
 import mx.edu.utez.SACIT.config.ApiResponse;
 import mx.edu.utez.SACIT.service.email.EmailService;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -16,6 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 @MultipartConfig
 public class EmailController {
     private EmailService emailService;
+    private static final Logger logger = LogManager.getLogger(UserController.class);
 
     @PostMapping("/sendEmail")
     public ResponseEntity<ApiResponse> senderEmail(@RequestParam("toEmail") String email,
@@ -25,6 +28,7 @@ public class EmailController {
                                                    @RequestParam("type") int type,
                                                    @RequestParam("file") MultipartFile file,
                                                    @RequestParam("name") String name) throws MessagingException {
+        logger.info("Envío de correo electrónico al email: {}", email);
         return emailService
                 .sendEmail(email, subject, title, messageContent, type, file, name);
     }
