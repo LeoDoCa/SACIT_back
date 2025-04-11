@@ -22,7 +22,6 @@ import java.util.UUID;
 @Transactional
 public class ProcedureService {
 
-
     @Autowired
     private ProcedureRepository procedureRepository;
 
@@ -105,6 +104,18 @@ public class ProcedureService {
             procedure.setCost(proceduresDto.getCost());
             procedure.setEstimatedTime(proceduresDto.getEstimatedTime());
             procedure.setStatus(proceduresDto.getStatus());
+
+            procedure.getRequieredDocuments().clear();
+
+            if (proceduresDto.getRequiredDocumentsNames() != null
+                    && !proceduresDto.getRequiredDocumentsNames().isEmpty()) {
+                for (String documentName : proceduresDto.getRequiredDocumentsNames()) {
+                    RequiredDocuments doc = new RequiredDocuments();
+                    doc.setName(documentName);
+                    doc.setProcedure(procedure);
+                    procedure.getRequieredDocuments().add(doc);
+                }
+            }
 
             Procedures updatedProcedure = procedureRepository.save(procedure);
             return new ResponseEntity<>(updatedProcedure, HttpStatus.OK);

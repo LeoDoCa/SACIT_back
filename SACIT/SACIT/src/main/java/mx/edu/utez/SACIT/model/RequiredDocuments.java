@@ -9,6 +9,8 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -27,6 +29,7 @@ public class RequiredDocuments {
 
     @ManyToOne
     @JoinColumn(name = "procedure_id", nullable = false)
+    @JsonBackReference
     private Procedures procedure;
 
     @ManyToMany

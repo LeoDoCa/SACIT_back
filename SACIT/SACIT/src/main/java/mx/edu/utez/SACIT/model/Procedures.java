@@ -9,6 +9,8 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -38,6 +40,7 @@ public class Procedures {
     private UserModel creator;
 
     @OneToMany(mappedBy = "procedure", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
     private Set<RequiredDocuments> requieredDocuments = new HashSet<>();
 
     @OneToMany(mappedBy = "procedure")
