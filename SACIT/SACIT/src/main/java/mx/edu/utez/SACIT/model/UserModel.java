@@ -11,6 +11,8 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -31,6 +33,7 @@ public class UserModel {
     @JoinColumn(name = "role_id", nullable = false)
     private RoleModel role;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "creator", cascade = CascadeType.ALL)
     private Set<Procedures> createdProcedures = new HashSet<>();
 
