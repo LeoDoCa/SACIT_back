@@ -105,8 +105,7 @@ public class ProcedureService {
             procedure.setEstimatedTime(proceduresDto.getEstimatedTime());
             procedure.setStatus(proceduresDto.getStatus());
 
-            // 👇 Esta parte actualiza los documentos requeridos
-            procedure.getRequieredDocuments().clear(); // elimina los anteriores
+            procedure.getRequieredDocuments().clear();
 
             if (proceduresDto.getRequiredDocumentsNames() != null
                     && !proceduresDto.getRequiredDocumentsNames().isEmpty()) {
