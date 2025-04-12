@@ -14,4 +14,5 @@ public interface WindowRepository extends JpaRepository<Window,Integer> {
     @Query("SELECT MAX(w.windowNumber) FROM Window w")
     Optional<Integer> findMaxWindowNumber();
 
+    Optional<Window> deleteByUuid(UUID uuid);
 }
