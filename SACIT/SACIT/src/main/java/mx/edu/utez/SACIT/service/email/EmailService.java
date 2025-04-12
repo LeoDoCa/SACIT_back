@@ -53,6 +53,36 @@ public class EmailService implements EmailRepository {
 
     }
 
+    public ResponseEntity<ApiResponse> sendEmailWithOtp(String toEmail, String otp) {
+        try {
+            Context context = new Context();
+            context.setVariable("title", "Código de verificación - SACIT");
+            context.setVariable("message", otp);
+            context.setVariable("name", "Usuario SACIT");
+
+            String htmlContent = templateEngine.process("verificacion", context);
+
+            MimeMessage message = javaMailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true);
+            helper.setTo(toEmail);
+            helper.setSubject("Código de verificación - SACIT");
+            helper.setText(htmlContent, true);
+            helper.setFrom("sacit3mail@gmail.com");
+
+            javaMailSender.send(message);
+
+            return new ResponseEntity<>(
+                    new ApiResponse(HttpStatus.OK, false, "El email con OTP se envió correctamente"),
+                    HttpStatus.OK
+            );
+        } catch (Exception e) {
+            return new ResponseEntity<>(
+                    new ApiResponse(HttpStatus.BAD_REQUEST, true, "No se pudo enviar el email con OTP"),
+                    HttpStatus.BAD_REQUEST
+            );
+        }
+    }
+
     public void sendSimpleEmail(String toEmail, String title, String subject, String messageContent) {
         try {
             MimeMessage message = javaMailSender.createMimeMessage();
