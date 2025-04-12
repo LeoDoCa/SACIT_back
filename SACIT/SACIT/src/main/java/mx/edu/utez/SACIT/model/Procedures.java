@@ -28,7 +28,7 @@ public class Procedures {
     private Double cost;
 
     @Column(name = "estimated_time")
-    private Integer estimatedTime;
+    private Integer stimatedTime;
 
     @Column(name = "creation_date")
     private String creationDate;

@@ -35,8 +35,20 @@ public class WindowService {
         this.userRepository = userRepository;
     }
 
-    public List<Window> getAll() {
-        return this.repository.findAll();
+    public ResponseEntity<?>getAll() {
+        try {
+            List<Window> windows = repository.findAll();
+            if (windows.isEmpty()) {
+                return Utilities.generateResponse(HttpStatus.NOT_FOUND, "No records found.", "404");
+            } else {
+                return Utilities.ResponseWithData(HttpStatus.OK, "Records found successfully.", "200", windows);
+            }
+        } catch (Exception e) {
+            return Utilities.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error", "500");
+        }
+
+
+
     }
 
     public ResponseEntity<?> findByUuid(UUID uuid) {
@@ -44,7 +56,7 @@ public class WindowService {
         try {
 
             if (window.isPresent()) {
-                return Utilities.generateResponse(HttpStatus.OK, "Record found successfully.", "200");
+                return Utilities.ResponseWithData(HttpStatus.OK, "Record found successfully.", "200",window);
 
             } else {
                 return Utilities.generateResponse(HttpStatus.NOT_FOUND, "Record not found.", "404");
@@ -77,7 +89,7 @@ public class WindowService {
                 window.setEndTime(endTime);
                 repository.save(window);
 
-                return Utilities.generateResponse(HttpStatus.OK, "Record created successfully.", "200");
+                return Utilities.ResponseWithData(HttpStatus.OK, "Record created successfully.", "200",window);
             } else {
                 return Utilities.generateResponse(HttpStatus.BAD_REQUEST, "Invalid role", "400");
             }
@@ -116,7 +128,7 @@ public class WindowService {
                 Integer nextWindowNumber = repository.findMaxWindowNumber().orElse(0) + 1;
                 Window window1 = new Window();
                 window1.setStatus(window.getStatus());
-
+                window1.setAttendant(attendant);
                 window.setWindowNumber(nextWindowNumber);
                 repository.save(window1);
                 return Utilities.generateResponse(HttpStatus.OK, "Record updated successfully.", "200");
