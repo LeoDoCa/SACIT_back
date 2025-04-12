@@ -116,7 +116,7 @@ public class WindowService {
                 Integer nextWindowNumber = repository.findMaxWindowNumber().orElse(0) + 1;
                 Window window1 = new Window();
                 window1.setStatus(window.getStatus());
-
+                window1.setAttendant(attendant);
                 window.setWindowNumber(nextWindowNumber);
                 repository.save(window1);
                 return Utilities.generateResponse(HttpStatus.OK, "Record updated successfully.", "200");
