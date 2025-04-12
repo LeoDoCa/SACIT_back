@@ -29,7 +29,7 @@ public class WindowController {
     }
 
     @GetMapping("/window")
-    public List<Window> windows() {
+    public ResponseEntity<?> windows() {
         return service.getAll();
     }
 
@@ -39,12 +39,12 @@ public class WindowController {
     }
 
     @PostMapping("/window")
-    public ResponseEntity save(@RequestBody WindowDTO window) {
+    public ResponseEntity<?> save(@RequestBody WindowDTO window) {
         try {
             if (window != null) {
+                Window createdWindow = service.save(window);
 
-                service.save(window);
-                return Utilities.generateResponse(HttpStatus.OK, "Record created successfully.", "200");
+                return Utilities.ResponseWithData(HttpStatus.OK, "Record created successfully.", "200", createdWindow);
             }
 
             return Utilities.generateResponse(HttpStatus.BAD_REQUEST, "All fields are required.", "400");
