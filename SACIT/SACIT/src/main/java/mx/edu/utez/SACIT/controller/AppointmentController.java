@@ -35,13 +35,12 @@ public class AppointmentController {
         return appointmentService.findByProcedure(procedureUuid);
     }
 
-    @PostMapping("/user/{userId}/procedure/{procedureUuid}/window/{windowId}")
+    @PostMapping("/user/{userUuid}/procedure/{procedureUuid}/window/{windowUuid}")
     public ResponseEntity<?> save(
             @RequestBody AppointmentDto appointmentDto,
-            @PathVariable Integer userId,
-            @PathVariable UUID procedureUuid,
-            @PathVariable Integer windowId) {
-        return appointmentService.save(appointmentDto, userId, procedureUuid, windowId);
+            @PathVariable UUID userUuid,
+            @PathVariable UUID procedureUuid) {
+        return appointmentService.save(appointmentDto, userUuid, procedureUuid);
     }
 
     @PutMapping("/{uuid}")

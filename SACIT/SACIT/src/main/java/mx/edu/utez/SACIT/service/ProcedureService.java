@@ -63,7 +63,7 @@ public class ProcedureService {
             procedure.setName(proceduresDto.getName());
             procedure.setDescription(proceduresDto.getDescription());
             procedure.setCost(proceduresDto.getCost());
-            procedure.setEstimatedTime(proceduresDto.getEstimatedTime());
+            procedure.setStimatedTime(proceduresDto.getEstimatedTime());
             procedure.setCreationDate(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE));
             procedure.setStatus("ACTIVE");
             procedure.setCreator(optionalUser.get());
@@ -102,7 +102,7 @@ public class ProcedureService {
             procedure.setName(proceduresDto.getName());
             procedure.setDescription(proceduresDto.getDescription());
             procedure.setCost(proceduresDto.getCost());
-            procedure.setEstimatedTime(proceduresDto.getEstimatedTime());
+            procedure.setStimatedTime(proceduresDto.getEstimatedTime());
             procedure.setStatus(proceduresDto.getStatus());
 
             procedure.getRequieredDocuments().clear();
