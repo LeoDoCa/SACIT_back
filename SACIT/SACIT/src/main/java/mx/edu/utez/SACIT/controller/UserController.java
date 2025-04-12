@@ -83,32 +83,38 @@ public class UserController {
                 logger.warn("Intento de registro con correo ya existente: {}", request.getEmail());
                 return Utilities.generateResponse(
                         HttpStatus.CONFLICT,
-                        "El correo electrónico ya está registrado. Por favor utilice otro.","409"
-                );
+                        "El correo electrónico ya está registrado. Por favor utilice otro.", "409");
             }
 
-            String defaultRoleName = "ROLE_USER";
-            RoleModel defaultRole = repository.findByRole(defaultRoleName)
-                    .orElseThrow(() -> new RuntimeException("Default role not found"));
+            RoleModel role;
+            if (request.getRole() != null && request.getRole().getRole() != null) {
+                role = repository.findByRole(request.getRole().getRole())
+                        .orElseThrow(() -> new RuntimeException("El rol proporcionado no existe"));
+            } else {
+                String defaultRoleName = "ROLE_USER";
+                role = repository.findByRole(defaultRoleName)
+                        .orElseThrow(() -> new RuntimeException("Default role not found"));
+            }
 
-            request.setRole(defaultRole);
+            request.setRole(role);
             request.setPassword(passwordEncoder.encode(request.getPassword()));
             this.userService.save(request);
             logger.info("Usuario registrado exitosamente: {}", request.getEmail());
+
             String title = "Bienvenido " + request.getName();
             String subject = "¡Te has registrado exitosamente en el sistema SACIT!";
-            String message =
-                    "<h2>¡Te damos la más cordial bienvenida al sistema SACIT!</h2>" +
-                            "<p>Tu registro se ha completado exitosamente. Ahora podrás acceder a una plataforma donde gestionarás de manera " +
-                            "eficiente los trámites de tu elección.</p>" +
-                            "<p>Recuerda mantener tus credenciales seguras y no compartirlas con nadie.</p>" +
-                            "<h3>Atentamente,</h3>" +
-                            "<h3>El equipo de SACIT</h3>";
+            String message = "<h2>¡Te damos la más cordial bienvenida al sistema SACIT!</h2>" +
+                    "<p>Tu registro se ha completado exitosamente. Ahora podrás acceder a una plataforma donde gestionarás de manera "
+                    +
+                    "eficiente los trámites de tu elección.</p>" +
+                    "<p>Recuerda mantener tus credenciales seguras y no compartirlas con nadie.</p>" +
+                    "<h3>Atentamente,</h3>" +
+                    "<h3>El equipo de SACIT</h3>";
             emailService.sendSimpleEmail(request.getEmail(), title, subject, message);
-            return Utilities.generateResponse(HttpStatus.OK, "Record created successfully.","200");
+            return Utilities.generateResponse(HttpStatus.OK, "Record created successfully.", "200");
         } catch (Exception e) {
             logger.error("Error al registrar usuario: {}", request.getEmail(), e);
-            return Utilities.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR,"500");
+            return Utilities.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR, "500");
         }
     }
 
