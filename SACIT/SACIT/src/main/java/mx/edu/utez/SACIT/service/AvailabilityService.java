@@ -27,18 +27,16 @@ public class AvailabilityService {
 
 
     public Window findAvailableWindow(LocalDate date, LocalTime requestedTime, Procedures procedure) {
-        // Calcular tiempo total (estimado + buffer)
         int totalDuration = procedure.getStimatedTime() + 15;
         LocalTime requestedEndTime = requestedTime.plusMinutes(totalDuration);
 
-        // Obtener ventanillas activas
         List<Window> activeWindows = windowRepository.findByStatus("Activa");
 
         List<Window> availableWindows = activeWindows.stream()
                 .filter(window -> isWindowAvailable(window, date, requestedTime, requestedEndTime))
                 .toList();
         if (availableWindows.isEmpty()) {
-            return null; // No hay ventanillas disponibles
+            return null;
         }
         Random random = new Random();
         return  availableWindows.get(random.nextInt(availableWindows.size()));
@@ -46,17 +44,14 @@ public class AvailabilityService {
 
     private boolean isWindowAvailable(Window window, LocalDate date,
                                       LocalTime startTime, LocalTime endTime) {
-        // Validar horario de trabajo de la ventanilla
         if (startTime.isBefore(window.getStartTime()) ||
                 endTime.isAfter(window.getEndTime())) {
             return false;
         }
 
-        // Obtener citas existentes para esa ventanilla y fecha
         List<Appointments> existingAppointments = appointmentRepository
                 .findByDateAndWindowAndStatusNot(date, window, "CANCELLED");
 
-        // Verificar traslapes
         return existingAppointments.stream().noneMatch(appointment ->
                 isTimeOverlapping(
                         appointment.getStartTime(),
