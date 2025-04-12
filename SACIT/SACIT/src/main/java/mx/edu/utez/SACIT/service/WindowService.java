@@ -71,8 +71,7 @@ public class WindowService {
     }
 
 
-    public ResponseEntity<?> save(WindowDTO dto) {
-
+    public Window save(WindowDTO dto) {
         try {
             UserModel attendant = userRepository.findByUuid(dto.getAttendantUuid())
                     .orElseThrow(() -> new RuntimeException("User not found"));
@@ -87,19 +86,17 @@ public class WindowService {
                 window.setWindowNumber(nextWindowNumber);
                 window.setStartTime(startTime);
                 window.setEndTime(endTime);
-                repository.save(window);
 
-                return Utilities.ResponseWithData(HttpStatus.OK, "Record created successfully.", "200",window);
+                return repository.save(window);
             } else {
-                return Utilities.generateResponse(HttpStatus.BAD_REQUEST, "Invalid role", "400");
+                throw new IllegalArgumentException("Invalid role");
             }
 
         } catch (IllegalArgumentException e) {
-            return Utilities.generateResponse(HttpStatus.BAD_REQUEST, "Invalid UUID format.", "400");
+            throw new IllegalArgumentException("Invalid UUID format. Details: " + e.getMessage(), e);
         } catch (Exception e) {
-            return Utilities.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error", "500");
+            throw new RuntimeException("An unexpected error occurred. Details: " + e.getMessage(), e);
         }
-
     }
 
     public ResponseEntity<?> delete(UUID uuid) {
