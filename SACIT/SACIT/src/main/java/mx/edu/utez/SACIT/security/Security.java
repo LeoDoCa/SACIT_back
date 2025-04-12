@@ -71,7 +71,7 @@ public class Security {
                         })
                 )
                 .authorizeHttpRequests(auth -> {
-                    auth.requestMatchers("/api/login", "/api/register", "/api/recover-password-email", "/api/reset-password/{token}", "/api/validate-token/**")
+                    auth.requestMatchers("/api/login", "/api/send-otp", "/api/verify-otp", "/api/validate-credentials", "/api/register", "/api/recover-password-email", "/api/reset-password/{token}", "/api/validate-token/**")
                             .permitAll();
 
                     for (String route : ADMIN_LIST) {
