@@ -6,6 +6,7 @@ import mx.edu.utez.sacit.service.AccessLogService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -49,7 +50,10 @@ public class Security {
     };
 
     private final String[] WINDOW_LIST = {
-            "/api/windowsschedule/**"
+            "/api/window/**",
+            "/api/appointments/**",
+            "/api/procedures/**",
+            "/api/required-documents/**",
     };
 
     private final AccessLogService service;
@@ -59,7 +63,7 @@ public class Security {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .cors(cors -> {})
-                .csrf(AbstractHttpConfigurer::disable)
+                .csrf(Customizer.withDefaults())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint((request, response, ex) -> {
@@ -70,8 +74,14 @@ public class Security {
                         })
                 )
                 .authorizeHttpRequests(auth -> {
-                    auth.requestMatchers("/api/login", "/api/send-otp", "/api/verify-otp", "/api/validate-credentials", "/api/register", "/api/recover-password-email", "/api/reset-password/{token}", "/api/validate-token/**")
+                    auth.requestMatchers("/api/login", "/api/send-otp", "/api/verify-otp", "/api/validate-credentials", "/api/register", "/api/recover-password-email", "/api/reset-password/{token}", "/api/validate-token/**","/api/procedures/","api/procedures/{uuid}","/api/required-documents/","/api/required-documents/{uuid}")
                             .permitAll();
+
+                    for(String route : WINDOW_LIST) {
+                        auth.requestMatchers(route).hasAuthority(WINDOW);
+                    }
+
+
 
                     for (String route : ADMIN_LIST) {
                         auth.requestMatchers(route).hasAuthority(ADMIN);
