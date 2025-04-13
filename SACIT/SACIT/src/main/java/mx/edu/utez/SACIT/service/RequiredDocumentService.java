@@ -20,10 +20,7 @@ import java.util.UUID;
 @Transactional
 public class RequiredDocumentService {
 
-
     private final RequiredDocumentRepository requiredDocumentRepository;
-
-
     private final ProcedureRepository procedureRepository;
 
     public RequiredDocumentService(RequiredDocumentRepository requiredDocumentRepository, ProcedureRepository procedureRepository) {
@@ -78,8 +75,6 @@ public class RequiredDocumentService {
             RequiredDocuments document = new RequiredDocuments();
             document.setUuid(UUID.randomUUID());
             document.setName(documentDto.getName());
-            document.setDescription(documentDto.getDescription());
-            document.setMandatory(documentDto.getMandatory());
             document.setProcedure(optionalProcedure.get());
 
             RequiredDocuments savedDocument = requiredDocumentRepository.save(document);
@@ -104,8 +99,6 @@ public class RequiredDocumentService {
 
         try {
             existingDocument.setName(documentDto.getName());
-            existingDocument.setDescription(documentDto.getDescription());
-            existingDocument.setMandatory(documentDto.getMandatory());
 
             RequiredDocuments updatedDocument = requiredDocumentRepository.save(existingDocument);
             return Utilities.ResponseWithData(HttpStatus.OK,"Document updated successfully","200",updatedDocument);

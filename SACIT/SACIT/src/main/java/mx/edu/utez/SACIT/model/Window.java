@@ -38,7 +38,7 @@ public class Window {
     private LocalTime endTime;
 
 
-    @ManyToOne
+    @OneToOne
     @JoinColumn(name = "user_id")
     @JsonProperty(value = "attendant")
     @JsonIgnoreProperties({"password", "creationDate", "role", "createdProcedures", "attendedWindows", "appointments"})

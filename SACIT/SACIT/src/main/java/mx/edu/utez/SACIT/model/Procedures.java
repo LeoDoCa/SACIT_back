@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -44,6 +44,7 @@ public class Procedures {
     private Set<RequiredDocuments> requieredDocuments = new HashSet<>();
 
     @OneToMany(mappedBy = "procedure")
+    @JsonIgnore
     private Set<Appointments> appointments = new HashSet<>();
 
 }

@@ -1,10 +1,12 @@
 package mx.edu.utez.SACIT.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.HashSet;
@@ -23,9 +25,6 @@ public class Appointments {
 
     @Column( updatable = false, nullable = false,unique = true)
     private UUID uuid;
-
-    private String phone;
-
     private LocalDate date;
 
     @Column(name = "start_time")
@@ -37,27 +36,50 @@ public class Appointments {
     @Column(name = "creation_date")
     private LocalDate creationDate;
 
-    @Column(name = "confirmation_code")
-    private String confirmationCode;
-
-    @Column(name = "cancellation_reason", length = 250)
-    private String cancellationReason;
-
     private String status;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
+    @JsonIgnore
+    @ManyToOne(optional = true)
+    @JoinColumn(name = "user_id",nullable = true)
+    @JsonBackReference
     private UserModel user;
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "procedure_id",nullable = false)
     private Procedures procedure;
 
-
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "window_id")
     private Window window;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "appointment")
+    @JsonManagedReference
     private Set<UploadedDocuments> uploadedDocuments = new HashSet<>();
+
+    @JsonIgnore
+    public Set<RequiredDocuments> getRequiredDocumentsForProcedure() {
+        if (this.procedure != null) {
+            return this.procedure.getRequieredDocuments();
+        }
+        return new HashSet<>();
+    }
+    public boolean hasAllRequiredDocuments() {
+        Set<RequiredDocuments> requiredDocs = getRequiredDocumentsForProcedure();
+
+        for (RequiredDocuments req : requiredDocs) {
+            boolean found = false;
+            for (UploadedDocuments upload : this.uploadedDocuments) {
+                if (upload.getRequiredDocuments().contains(req)) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) return false;
+        }
+
+        return true;
+    }
 }

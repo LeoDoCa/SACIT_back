@@ -1,7 +1,8 @@
 package mx.edu.utez.SACIT.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
-import lombok.Getter;
+        import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
@@ -42,6 +43,8 @@ public class UserModel {
     private Window attendedWindow;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @JsonManagedReference
+    @JsonIgnore
     private Set<Appointments> appointments = new HashSet<>();
 
     public UserModel(UUID uuid, String name, String lastName, String email, String password, RoleModel role) {

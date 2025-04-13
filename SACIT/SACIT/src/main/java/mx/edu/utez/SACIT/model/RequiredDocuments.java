@@ -1,5 +1,6 @@
 package mx.edu.utez.SACIT.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -22,10 +23,7 @@ public class RequiredDocuments {
     private Integer id;
     @Column(updatable = false, nullable = false, unique = true)
     private UUID uuid;
-
     private String name;
-    private String description;
-    private Boolean mandatory;
 
     @ManyToOne
     @JoinColumn(name = "procedure_id", nullable = false)
@@ -34,6 +32,7 @@ public class RequiredDocuments {
 
     @ManyToMany
     @JoinTable(name = "required_uploaded_documents", joinColumns = @JoinColumn(name = "required_document_id"), inverseJoinColumns = @JoinColumn(name = "uploaded_document_id"))
+    @JsonIgnore
     private Set<UploadedDocuments> uploadedDocuments = new HashSet<>();
 
     @PrePersist
