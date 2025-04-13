@@ -17,6 +17,7 @@ import mx.edu.utez.sacit.model.RoleModel;
 import mx.edu.utez.sacit.model.UserModel;
 import mx.edu.utez.sacit.repository.RoleRepository;
 import mx.edu.utez.sacit.service.UserService;
+import mx.edu.utez.sacit.service.TransactionLogService;
 import mx.edu.utez.sacit.utils.Utilities;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -30,15 +31,17 @@ public class UserController {
     private final PasswordResetTokenRepository passwordRepository;
     private final BCryptPasswordEncoder passwordEncoder;
     private final EmailService emailService;
+    private final TransactionLogService transactionLogService;
     private static final Logger logger = LogManager.getLogger(UserController.class);
 
 
-    UserController(UserService userService, BCryptPasswordEncoder passwordEncoder, RoleRepository repository, EmailService emailService, PasswordResetTokenRepository passwordRepository) {
+    UserController(UserService userService, BCryptPasswordEncoder passwordEncoder, RoleRepository repository, EmailService emailService, PasswordResetTokenRepository passwordRepository, TransactionLogService transactionLogService) {
         this.userService = userService;
         this.passwordEncoder = passwordEncoder;
         this.repository = repository;
         this.emailService = emailService;
         this.passwordRepository = passwordRepository;
+        this.transactionLogService = transactionLogService;
     }
 
     @GetMapping("/user")
@@ -107,6 +110,7 @@ public class UserController {
                     "<h3>Atentamente,</h3>" +
                     "<h3>El equipo de sacit</h3>";
             emailService.sendSimpleEmail(request.getEmail(), title, subject, message);
+            transactionLogService.logTransaction("REGISTRO", "users", request.getId(), "Usuario_Registrado");
             return Utilities.generateResponse(HttpStatus.OK, "Record created successfully.", "200");
         } catch (Exception e) {
             logger.error("Error al registrar usuario: {}", request.getEmail(), e);
@@ -138,6 +142,7 @@ public class UserController {
 
                 this.userService.save(user);
                 logger.info("Usuario actualizado correctamente: {}", uuid);
+                transactionLogService.logTransaction("ACTUALIZACION", "users", user.getId(), "Usuario_Actualizado");
                 return Utilities.generateResponse(HttpStatus.OK, "Record updated successfully.", "200");
             }
         } catch (Exception e) {
@@ -173,6 +178,7 @@ public class UserController {
                     "Haz clic en el enlace para recuperar tu contraseña: <a href='" + resetLink + "'>Recuperar contraseña</a>"
             );
             logger.info("Correo de recuperación enviado a: {}", email);
+            transactionLogService.logTransaction("RECUPERACION_CONTRASENA", "users", user.getId(), "Token_Generado");
             return new ResponseEntity<>(Utilities.generateResponse(HttpStatus.OK, "Token: " + token, "200"), HttpStatus.OK);
         } catch (Exception e) {
             logger.error("Error durante la recuperación de contraseña para el correo {}: {}", email, e.getMessage(), e);
@@ -209,6 +215,7 @@ public class UserController {
             user.setPassword(passwordEncoder.encode(newPassword));
             passwordRepository.delete(resetToken);
             logger.info("Contraseña restablecida exitosamente para el usuario: {}", user.getEmail());
+            transactionLogService.logTransaction("CAMBIO_CONTRASENA", "users", user.getId(), "Contraseña_Cambiada");
             return new ResponseEntity<>(Utilities.generateResponse(HttpStatus.OK, "Password reset successfully","200"),
                     HttpStatus.OK);
         } catch (Exception e) {
@@ -230,6 +237,7 @@ public class UserController {
             } else {
                 this.userService.delete(uuid);
                 logger.info("Usuario eliminado correctamente: {}", uuid);
+                transactionLogService.logTransaction("ELIMINACION", "users", user.getId(), "Usuario_Eliminado");
                 return Utilities.generateResponse(HttpStatus.OK, "Record deleted successfully.", "200");
             }
         } catch (Exception e) {
