@@ -1,10 +1,12 @@
 package mx.edu.utez.SACIT.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -22,7 +24,7 @@ public class UploadedDocuments {
     private UUID uuid;
 
     @Column(name = "uploaded_date")
-    private String uploadedDate;
+    private LocalDate uploadedDate;
 
     @Lob
     @Column(name = "document", columnDefinition = "LONGBLOB")
@@ -30,8 +32,10 @@ public class UploadedDocuments {
 
     @ManyToOne
     @JoinColumn(name = "appointment_id")
+    @JsonBackReference
     private Appointments appointment;
 
     @ManyToMany(mappedBy = "uploadedDocuments")
+    @JsonIgnore
     private Set<RequiredDocuments> requiredDocuments = new HashSet<>();
 }

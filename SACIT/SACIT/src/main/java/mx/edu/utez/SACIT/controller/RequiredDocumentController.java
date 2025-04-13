@@ -2,7 +2,6 @@ package mx.edu.utez.SACIT.controller;
 
 import mx.edu.utez.SACIT.dto.RequiredDocumentsDto;
 import mx.edu.utez.SACIT.service.RequiredDocumentService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,8 +11,11 @@ import java.util.UUID;
 @RequestMapping("/api/required-documents")
 public class RequiredDocumentController {
 
-    @Autowired
-    private RequiredDocumentService requiredDocumentService;
+    private final RequiredDocumentService requiredDocumentService;
+
+    public RequiredDocumentController(RequiredDocumentService requiredDocumentService) {
+        this.requiredDocumentService = requiredDocumentService;
+    }
 
     @GetMapping("/")
     public ResponseEntity<?> getAll() {

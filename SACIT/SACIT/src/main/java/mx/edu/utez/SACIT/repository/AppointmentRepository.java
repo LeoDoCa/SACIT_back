@@ -1,6 +1,7 @@
 package mx.edu.utez.SACIT.repository;
 
 import mx.edu.utez.SACIT.model.Appointments;
+import mx.edu.utez.SACIT.model.UserModel;
 import mx.edu.utez.SACIT.model.Window;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -13,4 +14,6 @@ public interface AppointmentRepository extends JpaRepository<Appointments, Integ
     Appointments findByUuid(UUID uuid);
 
     List<Appointments> findByDateAndWindowAndStatusNot(LocalDate date, Window window, String status);
+
+    List<Appointments> findByUserAndStatus(UserModel user, String status);
 }

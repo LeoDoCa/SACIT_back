@@ -11,12 +11,9 @@ import java.util.UUID;
 public class AppointmentDto {
     private Integer id;
     private UUID uuid;
-    private String phone;
     private LocalDate date;
     private LocalTime startTime;
     private LocalTime endTime;
     private LocalDate creationDate;
-    private String confirmationCode;
-    private String cancellationReason;
     private String status;
 }

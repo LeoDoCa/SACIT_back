@@ -2,7 +2,6 @@ package mx.edu.utez.SACIT.controller;
 
 import mx.edu.utez.SACIT.dto.ProceduresDto;
 import mx.edu.utez.SACIT.service.ProcedureService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,8 +11,11 @@ import java.util.UUID;
 @RequestMapping("/api/procedures")
 public class ProcedureController {
 
-    @Autowired
-    private ProcedureService procedureService;
+    private final ProcedureService procedureService;
+
+    public ProcedureController(ProcedureService procedureService) {
+        this.procedureService = procedureService;
+    }
 
     @GetMapping("/")
     public ResponseEntity<?> getAll() {
