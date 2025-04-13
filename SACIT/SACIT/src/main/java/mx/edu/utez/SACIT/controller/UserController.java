@@ -32,10 +32,6 @@ public class UserController {
     private final EmailService emailService;
     private static final Logger logger = LogManager.getLogger(UserController.class);
 
-    private static final String RECORD_NOT_FOUND = "Record not found.";
-    private static final String INTERNAL_SERVER_ERROR = "An internal server error occurred.";
-    private static final String NOTFOUND_CODE = "404";
-    private static final String INTERNAL_SERVER_ERROR_CODE = "500";
 
     UserController(UserService userService, BCryptPasswordEncoder passwordEncoder, RoleRepository repository, EmailService emailService, PasswordResetTokenRepository passwordRepository) {
         this.userService = userService;
@@ -58,13 +54,13 @@ public class UserController {
             List<UserModel> users = userService.getUsersByRoleName(roleName.toUpperCase());
             if (users.isEmpty()) {
                 logger.warn("No se encontraron usuarios con el rol: {}", roleName);
-                return Utilities.generateResponse(HttpStatus.NOT_FOUND, "No se encontraron usuarios con el rol proporcionado", NOTFOUND_CODE);
+                return Utilities.generateResponse(HttpStatus.NOT_FOUND, "No se encontraron usuarios con el rol proporcionado", "404");
             }
             logger.info("Usuarios encontrados con el rol {}: {}", roleName, users.size());
             return new ResponseEntity<>(users, HttpStatus.OK);
         } catch (Exception e) {
             logger.error("Error al consultar usuarios por rol: {}", roleName, e);
-            return Utilities.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Error al consultar usuarios por rol", INTERNAL_SERVER_ERROR_CODE);
+            return Utilities.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Error al consultar usuarios por rol", "500");
         }
     }
 
@@ -114,33 +110,41 @@ public class UserController {
             return Utilities.generateResponse(HttpStatus.OK, "Record created successfully.", "200");
         } catch (Exception e) {
             logger.error("Error al registrar usuario: {}", request.getEmail(), e);
-            return Utilities.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR, "500");
+            return Utilities.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR, "An Internal Server error occurred", "500");
         }
     }
 
     @PutMapping("/user/{uuid}")
-    public ResponseEntity<Object> editUser(@PathVariable("uuid") UUID uuid, @RequestBody UserModel request) {
+    public ResponseEntity<Object> editUser(@PathVariable("uuid") UUID uuid, @RequestBody Map<String, String> request) {
         logger.info("Solicitud de actualización para usuario con UUID: {}", uuid);
         try {
             UserModel user = this.getByUuid(uuid);
             if (user == null) {
                 logger.warn("Usuario no encontrado con UUID: {}", uuid);
-                return Utilities.generateResponse(HttpStatus.BAD_REQUEST, RECORD_NOT_FOUND,"404");
+                return Utilities.generateResponse(HttpStatus.BAD_REQUEST,"User not found", "404");
             } else {
-                user.setName(request.getName());
-                user.setLastName(request.getLastName());
-                user.setEmail(request.getEmail());
-                user.setRole(request.getRole());
+                if (request.containsKey("name")) {
+                    user.setName(request.get("name"));
+                }
+
+                if (request.containsKey("lastName")) {
+                    user.setLastName(request.get("lastName"));
+                }
+
+                if (request.containsKey("password") && !request.get("password").isEmpty()) {
+                    String encodedPassword = passwordEncoder.encode(request.get("password"));
+                    user.setPassword(encodedPassword);
+                }
+
                 this.userService.save(user);
                 logger.info("Usuario actualizado correctamente: {}", uuid);
-                return Utilities.generateResponse(HttpStatus.OK, "Record updated successfully.","200");
+                return Utilities.generateResponse(HttpStatus.OK, "Record updated successfully.", "200");
             }
         } catch (Exception e) {
             logger.error("Error al actualizar usuario con UUID: {}", uuid, e);
-            return Utilities.generateResponse(HttpStatus.BAD_REQUEST, INTERNAL_SERVER_ERROR,"500");
+            return Utilities.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR,"An internal server error occurred", "500");
         }
     }
-
     @PostMapping("/recover-password-email")
     public ResponseEntity<Object> recoverPasswordEmail(@RequestBody Map<String, String> request) {
         String email = request.get("email");
@@ -149,7 +153,7 @@ public class UserController {
             UserModel user = userService.findByEmail(email);
             if (user == null) {
                 logger.warn("No se encontró un usuario con el correo: {}", email);
-                return Utilities.generateResponse(HttpStatus.NOT_FOUND, RECORD_NOT_FOUND, "404");
+                return Utilities.generateResponse(HttpStatus.NOT_FOUND, "User not found", "404");
             }
             PasswordResetToken existingToken = passwordRepository.findByUserAndExpiryDateAfter(user, LocalDateTime.now());
             if (existingToken != null) {
@@ -172,7 +176,7 @@ public class UserController {
             return new ResponseEntity<>(Utilities.generateResponse(HttpStatus.OK, "Token: " + token, "200"), HttpStatus.OK);
         } catch (Exception e) {
             logger.error("Error durante la recuperación de contraseña para el correo {}: {}", email, e.getMessage(), e);
-            return new ResponseEntity<>(Utilities.generateResponse(HttpStatus.BAD_REQUEST, INTERNAL_SERVER_ERROR,"500"), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(Utilities.generateResponse(HttpStatus.BAD_REQUEST, "An internal server error occurred","500"), HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -198,7 +202,7 @@ public class UserController {
             PasswordResetToken resetToken = passwordRepository.findByToken(token);
             if (resetToken == null || resetToken.getExpiryDate().isBefore(LocalDateTime.now())) {
                 logger.warn("Token inválido o expirado al intentar restablecer contraseña: {}", token);
-                return new ResponseEntity<>(Utilities.generateResponse(HttpStatus.BAD_REQUEST, INTERNAL_SERVER_ERROR,"500"),
+                return new ResponseEntity<>(Utilities.generateResponse(HttpStatus.BAD_REQUEST, "An internal server error  occurred","500"),
                         HttpStatus.BAD_REQUEST);
             }
             UserModel user = resetToken.getUser();
@@ -210,7 +214,7 @@ public class UserController {
         } catch (Exception e) {
             logger.error("Error al restablecer contraseña con token {}: {}", token, e.getMessage(), e);
             return new ResponseEntity<>(
-                    Utilities.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR,"500"),
+                    Utilities.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR,"An Internal server error occurred","500"),
                     HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -222,7 +226,7 @@ public class UserController {
             UserModel user = this.getByUuid(uuid);
             if (user == null) {
                 logger.warn("Usuario no encontrado para eliminar: {}", uuid);
-                return Utilities.generateResponse(HttpStatus.BAD_REQUEST, RECORD_NOT_FOUND, "404");
+                return Utilities.generateResponse(HttpStatus.BAD_REQUEST,"User not found", "404");
             } else {
                 this.userService.delete(uuid);
                 logger.info("Usuario eliminado correctamente: {}", uuid);
@@ -230,7 +234,7 @@ public class UserController {
             }
         } catch (Exception e) {
             logger.error("Error al eliminar usuario con UUID: {}", uuid, e);
-            return Utilities.generateResponse(HttpStatus.BAD_REQUEST, INTERNAL_SERVER_ERROR, "500");
+            return Utilities.generateResponse(HttpStatus.BAD_REQUEST,"An internal server error occurred", "500");
         }
     }
 }
