@@ -32,13 +32,13 @@
     </Appenders>
 
     <Loggers>
-        <Logger name="mx.edu.utez.SACIT.controller" level="debug" additivity="false">
+        <Logger name="mx.edu.utez.sacit.controller" level="debug" additivity="false">
             <AppenderRef ref="ControllerFileAppender"/>
             <AppenderRef ref="ConsoleAppender"/>
             <AppenderRef ref="FileAppender"/>
         </Logger>
 
-        <Logger name="mx.edu.utez.SACIT.service" level="info" additivity="false">
+        <Logger name="mx.edu.utez.sacit.service" level="info" additivity="false">
             <AppenderRef ref="FileAppender"/>
         </Logger>
 
