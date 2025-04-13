@@ -39,10 +39,10 @@ public class WindowController {
     }
 
     @PostMapping("/window")
-    public ResponseEntity<?> save(@RequestBody WindowDTO window) {
+    public ResponseEntity<Object> save(@RequestBody WindowDTO window) {
         try {
             if (window != null) {
-                Window createdWindow = service.save(window);
+                ResponseEntity<Object> createdWindow = service.save(window);
 
                 return Utilities.ResponseWithData(HttpStatus.OK, "Record created successfully.", "200", createdWindow);
             }
