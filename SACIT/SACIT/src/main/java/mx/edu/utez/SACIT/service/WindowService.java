@@ -29,24 +29,25 @@ import java.util.UUID;
 public class WindowService {
     private final WindowRepository repository;
     private final UserRepository userRepository;
+    private final WindowRepository windowRepository;
 
-    public WindowService(WindowRepository repository, UserRepository userRepository) {
+    public WindowService(WindowRepository repository, UserRepository userRepository, WindowRepository windowRepository) {
         this.repository = repository;
         this.userRepository = userRepository;
+        this.windowRepository = windowRepository;
     }
 
-    public ResponseEntity<?>getAll() {
+    public ResponseEntity<?> getAll() {
         try {
             List<Window> windows = repository.findAll();
             if (windows.isEmpty()) {
                 return Utilities.generateResponse(HttpStatus.NOT_FOUND, "No records found.", "404");
             } else {
                 return Utilities.ResponseWithData(HttpStatus.OK, "Records found successfully.", "200", windows);
-            }}
-        catch (Exception e) {
+            }
+        } catch (Exception e) {
             return Utilities.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error", "500");
         }
-
 
 
     }
@@ -56,7 +57,7 @@ public class WindowService {
         try {
 
             if (window.isPresent()) {
-                return Utilities.ResponseWithData(HttpStatus.OK, "Record found successfully.", "200",window);
+                return Utilities.ResponseWithData(HttpStatus.OK, "Record found successfully.", "200", window);
 
             } else {
                 return Utilities.generateResponse(HttpStatus.NOT_FOUND, "Record not found.", "404");
@@ -71,11 +72,14 @@ public class WindowService {
     }
 
 
-    public Window save(WindowDTO dto) {
+    public ResponseEntity <Object> save(WindowDTO dto) {
         try {
             UserModel attendant = userRepository.findByUuid(dto.getAttendantUuid())
                     .orElseThrow(() -> new RuntimeException("User not found"));
-
+            Window existingWindow = windowRepository.findByAttendant_Uuid(attendant.getUuid());
+            if (existingWindow != null) {
+return Utilities.generateResponse(HttpStatus.BAD_REQUEST, "The user is already assigned to a window.", "400");
+            }
             if (attendant.getRole().getId() == 3 || "ROLE_WINDOW".equals(attendant.getRole().getRole())) {
                 Integer nextWindowNumber = repository.findMaxWindowNumber().orElse(0) + 1;
                 LocalTime startTime = LocalTime.of(9, 0);
@@ -87,15 +91,16 @@ public class WindowService {
                 window.setStartTime(startTime);
                 window.setEndTime(endTime);
 
-                return repository.save(window);
+                 repository.save(window);
+                return Utilities.ResponseWithData(HttpStatus.OK, "Record created successfully.", "200", window);
             } else {
-                throw new IllegalArgumentException("Invalid role");
-            }
+                return Utilities.generateResponse(HttpStatus.BAD_REQUEST, "Invalid role", "400");   }
 
         } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("Invalid UUID format. Details: " + e.getMessage(), e);
+            return Utilities.generateResponse(HttpStatus.BAD_REQUEST, "Invalid UUID format.", "400");
         } catch (Exception e) {
-            throw new RuntimeException("An unexpected error occurred. Details: " + e.getMessage(), e);
+            return Utilities.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error", "500");
+
         }
     }
 
@@ -115,7 +120,7 @@ public class WindowService {
         }
     }
 
-    public ResponseEntity<?> changeAttendant(WindowDTO window,UUID uuid) {
+    public ResponseEntity<?> changeAttendant(WindowDTO window, UUID uuid) {
 
         try {
             Window existingWindow = repository.findByUuid(uuid)
@@ -138,16 +143,17 @@ public class WindowService {
             return Utilities.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error", "500");
         }
     }
-    public ResponseEntity<?> changeStatus(WindowDTO window,UUID uuid) {
+
+    public ResponseEntity<?> changeStatus(WindowDTO window, UUID uuid) {
 
         try {
             Window existingWindow = repository.findByUuid(uuid)
                     .orElseThrow(() -> new RuntimeException("Window not found"));
 
-                existingWindow.setStatus(window.getStatus());
+            existingWindow.setStatus(window.getStatus());
 
-                repository.save(existingWindow);
-                return Utilities.generateResponse(HttpStatus.OK, "Record updated successfully.", "200");
+            repository.save(existingWindow);
+            return Utilities.generateResponse(HttpStatus.OK, "Record updated successfully.", "200");
 
         } catch (IllegalArgumentException e) {
             return Utilities.generateResponse(HttpStatus.BAD_REQUEST, "Invalid UUID format.", "400");

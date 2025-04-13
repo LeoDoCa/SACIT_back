@@ -37,8 +37,9 @@ public class UserModel {
     @OneToMany(mappedBy = "creator", cascade = CascadeType.ALL)
     private Set<Procedures> createdProcedures = new HashSet<>();
 
-    @OneToMany(mappedBy = "attendant", cascade = CascadeType.ALL)
-    private Set<Window> attendedWindows = new HashSet<>();
+    @JsonIgnore
+    @OneToOne(mappedBy = "attendant", cascade = CascadeType.ALL)
+    private Window attendedWindow;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private Set<Appointments> appointments = new HashSet<>();

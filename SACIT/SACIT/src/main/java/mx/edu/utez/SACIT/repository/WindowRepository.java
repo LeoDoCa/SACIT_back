@@ -17,4 +17,6 @@ public interface WindowRepository extends JpaRepository<Window,Integer> {
 
     Optional<Window> deleteByUuid(UUID uuid);
     List<Window> findByStatus (String status);
+
+   Window findByAttendant_Uuid(UUID uuid);
 }
