@@ -1,6 +1,7 @@
 package mx.edu.utez.SACIT.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -36,10 +37,14 @@ public class Window {
     @Column(name = "end_time")
     private LocalTime endTime;
 
-    @JsonIgnore
+
     @ManyToOne
     @JoinColumn(name = "user_id")
+    @JsonProperty(value = "attendant")
+    @JsonIgnoreProperties({"password", "creationDate", "role", "createdProcedures", "attendedWindows", "appointments"})
+
     private UserModel attendant;
+
 
     @JsonIgnore
     @OneToMany(mappedBy = "window")

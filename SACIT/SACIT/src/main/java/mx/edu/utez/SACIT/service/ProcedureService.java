@@ -6,6 +6,8 @@ import mx.edu.utez.SACIT.model.RequiredDocuments;
 import mx.edu.utez.SACIT.model.UserModel;
 import mx.edu.utez.SACIT.repository.ProcedureRepository;
 import mx.edu.utez.SACIT.repository.UserRepository;
+import mx.edu.utez.SACIT.utils.Utilities;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,40 +24,56 @@ import java.util.UUID;
 @Transactional
 public class ProcedureService {
 
-    @Autowired
-    private ProcedureRepository procedureRepository;
 
-    @Autowired
-    private UserRepository userRepository;
+    private  final ProcedureRepository procedureRepository;
+
+    private  final UserRepository userRepository;
+
+    public ProcedureService(ProcedureRepository procedureRepository, UserRepository userRepository) {
+        this.procedureRepository = procedureRepository;
+        this.userRepository = userRepository;
+    }
 
     @Transactional(readOnly = true)
     public ResponseEntity<?> findAll() {
-        List<Procedures> proceduresList = procedureRepository.findAll();
-        if (proceduresList.isEmpty()) {
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+
+        try{
+            List<Procedures> proceduresList = procedureRepository.findAll();
+            if (proceduresList.isEmpty()) {
+                return Utilities.generateResponse(HttpStatus.NOT_FOUND, "No records found", "404");
+            }
+            return Utilities.ResponseWithData(HttpStatus.OK, "Records found successfully", "200", proceduresList);
+        } catch (Exception e) {
+            return Utilities.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error", "500");
         }
-        return new ResponseEntity<>(proceduresList, HttpStatus.OK);
+
     }
 
     @Transactional(readOnly = true)
     public ResponseEntity<?> findByUuid(UUID uuid) {
-        Optional<Procedures> optionalProcedure = procedureRepository.findByUuid(uuid);
-        if (optionalProcedure.isPresent()) {
-            return new ResponseEntity<>(optionalProcedure.get(), HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        try {
+            Optional<Procedures> optionalProcedure = procedureRepository.findByUuid(uuid);
+            if (optionalProcedure.isPresent()) {
+return Utilities.ResponseWithData(HttpStatus.OK, "Record found successfully", "200", optionalProcedure.get());
+            }else {
+             return Utilities.generateResponse(HttpStatus.NOT_FOUND, "Procedure not found", "404");
+            }
+        }catch (IllegalArgumentException e){
+return Utilities.generateResponse(HttpStatus.NOT_FOUND,"Invalid UUID","400");
+        }catch (Exception e){
+            return Utilities.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR,"Internal Server Error","500");
         }
+
     }
 
     @Transactional
     public ResponseEntity<?> save(ProceduresDto proceduresDto) {
         try {
-            System.out.println("Iniciando guardado de procedimiento: " + proceduresDto.getName());
 
             Optional<UserModel> optionalUser = userRepository.findById(proceduresDto.getCreatorId());
             if (!optionalUser.isPresent()) {
-                System.out.println("Usuario creador no encontrado: " + proceduresDto.getCreatorId());
-                return new ResponseEntity<>("Creator not found", HttpStatus.BAD_REQUEST);
+                return Utilities.generateResponse(HttpStatus.BAD_REQUEST, "Creator not found", "400");
+
             }
 
             Procedures procedure = new Procedures();
@@ -70,9 +88,7 @@ public class ProcedureService {
 
             if (proceduresDto.getRequiredDocumentsNames() != null
                     && !proceduresDto.getRequiredDocumentsNames().isEmpty()) {
-                System.out.println("Procesando documentos requeridos...");
                 for (String documentName : proceduresDto.getRequiredDocumentsNames()) {
-                    System.out.println("Agregando documento requerido: " + documentName);
                     RequiredDocuments document = new RequiredDocuments();
                     document.setName(documentName);
                     document.setProcedure(procedure);
@@ -81,9 +97,11 @@ public class ProcedureService {
             }
 
             Procedures savedProcedure = procedureRepository.save(procedure);
-            System.out.println("Procedimiento guardado exitosamente con ID: " + savedProcedure.getId());
-
-            return new ResponseEntity<>(savedProcedure, HttpStatus.CREATED);
+return Utilities.ResponseWithData(HttpStatus.CREATED, "Procedure created successfully", "201", savedProcedure);
+        }catch (IllegalArgumentException e) {
+            return Utilities.generateResponse(HttpStatus.BAD_REQUEST, "Invalid UUID", "400");
+        } catch (NullPointerException e) {
+            return Utilities.generateResponse(HttpStatus.BAD_REQUEST, "Null value found", "400");
         } catch (Exception e) {
             System.out.println("Error al guardar el procedimiento: " + e.getMessage());
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -128,31 +146,43 @@ public class ProcedureService {
     public ResponseEntity<?> changeStatus(UUID uuid, String status) {
         Optional<Procedures> optionalProcedure = procedureRepository.findByUuid(uuid);
         if (!optionalProcedure.isPresent()) {
-            return new ResponseEntity<>("Procedure not found", HttpStatus.NOT_FOUND);
+return Utilities.generateResponse(HttpStatus.NOT_FOUND, "Procedure not found", "404");
         }
 
         try {
             Procedures procedure = optionalProcedure.get();
             procedure.setStatus(status);
             Procedures updatedProcedure = procedureRepository.save(procedure);
-            return new ResponseEntity<>(updatedProcedure, HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return Utilities.ResponseWithData(HttpStatus.OK, "Procedure status updated successfully", "200", updatedProcedure);
+
+        }catch (IllegalArgumentException e) {
+return Utilities.generateResponse(HttpStatus.BAD_REQUEST, "Invalid UUID", "400");
+        } catch (NullPointerException e) {
+return Utilities.generateResponse(HttpStatus.BAD_REQUEST, "Null value found", "400");
+        }
+        catch (Exception e) {
+            return Utilities.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error", "500");
+
         }
     }
 
     @Transactional
     public ResponseEntity<?> delete(UUID uuid) {
-        Optional<Procedures> optionalProcedure = procedureRepository.findByUuid(uuid);
-        if (!optionalProcedure.isPresent()) {
-            return new ResponseEntity<>("Procedure not found", HttpStatus.NOT_FOUND);
-        }
-
         try {
+            Optional<Procedures> optionalProcedure = procedureRepository.findByUuid(uuid);
+            if (!optionalProcedure.isPresent()) {
+                return Utilities.generateResponse(HttpStatus.NOT_FOUND, "Procedure not found", "404");
+            }
             procedureRepository.delete(optionalProcedure.get());
-            return new ResponseEntity<>("Procedure deleted successfully", HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return Utilities.generateResponse(HttpStatus.OK, "Procedure deleted successfully", "200");
+
+        } catch (IllegalArgumentException e) {
+            return Utilities.generateResponse(HttpStatus.BAD_REQUEST, "Invalid UUID", "400");
+        }catch (Exception e) {
+
+            return Utilities.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error", "500");
         }
     }
+
+
 }
