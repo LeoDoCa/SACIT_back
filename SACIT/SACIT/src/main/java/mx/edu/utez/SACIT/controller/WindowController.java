@@ -57,7 +57,15 @@ public class WindowController {
     @PutMapping("/window/{uuid}")
     public ResponseEntity<?> update(@PathVariable UUID uuid, @RequestBody WindowDTO window) {
         if (window != null) {
-            return service.changeStatus(window);
+            return service.changeStatus(window, uuid);
+
+        }
+        return Utilities.generateResponse(HttpStatus.BAD_REQUEST, "All fields are required.", "400");
+    }
+    @PutMapping("/window/attendant/{uuid}")
+    public ResponseEntity<?> updateAttendant(@PathVariable UUID uuid, @RequestBody WindowDTO window) {
+        if (window != null) {
+            return service.changeAttendant(window, uuid);
 
         }
         return Utilities.generateResponse(HttpStatus.BAD_REQUEST, "All fields are required.", "400");
