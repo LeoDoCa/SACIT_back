@@ -41,19 +41,24 @@ public class Security {
 
     String ADMIN = "ROLE_ADMIN";
     String WINDOW = "ROLE_WINDOW";
+    String USER = "ROLE_USER";
     private final String[] ADMIN_LIST = {
             "/api/user/**",
             "/api/window/**",
             "/api/appointments/**",
+            "/api/appointments/today",
             "/api/procedures/**",
             "/api/required-documents/",
     };
 
     private final String[] WINDOW_LIST = {
-            "/api/window/**",
-            "/api/appointments/**",
-            "/api/procedures/**",
-            "/api/required-documents/**",
+            "/api/window/{windowUuid}/appointments",
+            "/api/appointments/{appointmentUuid}/documents",
+            "/api/appointments/{uuid}/status",
+    };
+
+    private final String[] USER_LIST = {
+            "/api/appointments/user/{userUuid}"
     };
 
     private final AccessLogService service;
@@ -63,7 +68,9 @@ public class Security {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .cors(cors -> {})
-                .csrf(Customizer.withDefaults())
+                .csrf(csrf -> csrf
+                        .ignoringRequestMatchers("/api/**")
+                )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint((request, response, ex) -> {
@@ -74,13 +81,16 @@ public class Security {
                         })
                 )
                 .authorizeHttpRequests(auth -> {
-                    auth.requestMatchers("/api/login", "/api/send-otp", "/api/verify-otp", "/api/validate-credentials", "/api/register", "/api/recover-password-email", "/api/reset-password/{token}", "/api/validate-token/**","/api/procedures/","api/procedures/{uuid}","/api/required-documents/","/api/required-documents/{uuid}")
+                    auth.requestMatchers("/api/login", "/api/send-otp", "/api/verify-otp", "/api/validate-credentials", "/api/register", "/api/recover-password-email", "/api/reset-password/{token}", "/api/validate-token/**","/api/procedures/","api/procedures/{uuid}","/api/required-documents/","/api/required-documents/{uuid}", "/api/appointments/")
                             .permitAll();
+
+                    for(String route : USER_LIST) {
+                        auth.requestMatchers(route).hasAuthority(USER);
+                    }
 
                     for(String route : WINDOW_LIST) {
                         auth.requestMatchers(route).hasAuthority(WINDOW);
                     }
-
 
 
                     for (String route : ADMIN_LIST) {

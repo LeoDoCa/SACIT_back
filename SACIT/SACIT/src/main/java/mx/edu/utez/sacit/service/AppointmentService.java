@@ -1,6 +1,8 @@
 package mx.edu.utez.sacit.service;
 
 import mx.edu.utez.sacit.dto.AppointmentDto;
+import mx.edu.utez.sacit.dto.PendingAppointmentDto;
+import mx.edu.utez.sacit.dto.UnloggedUserDto;
 import mx.edu.utez.sacit.dto.UploadedDocumentsDto;
 import mx.edu.utez.sacit.model.*;
 import mx.edu.utez.sacit.repository.*;
@@ -25,17 +27,17 @@ public class AppointmentService {
     private final ProcedureRepository procedureRepository;
     private final RequiredDocumentRepository requiredDocumentRepository;
     private final UploadedDocumentRepository uploadedDocumentRepository;
-    private final WindowRepository windowRepository;
+    private final UnloggedUsersRepository unloggedUsersRepository;
     private final AvailabilityService availabilityService;
 
-    public AppointmentService(AppointmentRepository appointmentRepository, UserRepository userRepository, ProcedureRepository procedureRepository, WindowRepository windowRepository, AvailabilityService availabilityService, RequiredDocumentRepository requiredDocumentRepository, UploadedDocumentRepository uploadedDocumentRepository) {
+    public AppointmentService(AppointmentRepository appointmentRepository, UserRepository userRepository, ProcedureRepository procedureRepository, WindowRepository windowRepository, AvailabilityService availabilityService, RequiredDocumentRepository requiredDocumentRepository, UploadedDocumentRepository uploadedDocumentRepository, UnloggedUsersRepository unloggedUsersRepository) {
         this.appointmentRepository = appointmentRepository;
         this.userRepository = userRepository;
         this.procedureRepository = procedureRepository;
-        this.windowRepository = windowRepository;
         this.availabilityService = availabilityService;
         this.requiredDocumentRepository = requiredDocumentRepository;
         this.uploadedDocumentRepository = uploadedDocumentRepository;
+        this.unloggedUsersRepository = unloggedUsersRepository;
     }
 
     @Transactional(readOnly = true)
@@ -72,14 +74,12 @@ public class AppointmentService {
     }
 
     @Transactional
-    public ResponseEntity<?> saveWithDocuments(AppointmentDto appointmentDto, UUID userUuid, UUID procedureUuid,
+    public ResponseEntity<?> saveWithDocuments(AppointmentDto appointmentDto,
+                                               UUID userUuid,
+                                               UnloggedUserDto unloggedUserDto,
+                                               UUID procedureUuid,
                                                List<UploadedDocumentsDto> documents) {
         try {
-            Optional<UserModel> optionalUser = userRepository.findByUuid(userUuid);
-            if (optionalUser.isEmpty()) {
-                return Utilities.generateResponse(HttpStatus.BAD_REQUEST, "User not found", "400");
-            }
-
             Optional<Procedures> optionalProcedure = procedureRepository.findByUuid(procedureUuid);
             if (optionalProcedure.isEmpty()) {
                 return Utilities.generateResponse(HttpStatus.BAD_REQUEST, "Procedure not found", "400");
@@ -116,10 +116,36 @@ public class AppointmentService {
             appointment.setStartTime(appointmentDto.getStartTime());
             appointment.setEndTime(endTime);
             appointment.setCreationDate(LocalDate.now());
-            appointment.setStatus("PENDING");
-            appointment.setUser(optionalUser.get());
+            appointment.setStatus("Pendiente");
             appointment.setProcedure(procedure);
             appointment.setWindow(window);
+
+            if (userUuid != null) {
+                Optional<UserModel> optionalUser = userRepository.findByUuid(userUuid);
+                if (optionalUser.isEmpty()) {
+                    return Utilities.generateResponse(HttpStatus.BAD_REQUEST, "User not found", "400");
+                }
+
+                UserModel user = optionalUser.get();
+
+                if (user.getRole().getId() != 1 && !"ROLE_USER".equals(user.getRole().getRole())) {
+                    return Utilities.generateResponse(HttpStatus.BAD_REQUEST,
+                            "Only users with ROLE_USER can create appointments", "400");
+                }
+
+                appointment.setUser(user);
+            } else if (unloggedUserDto != null) {
+                UnloggedUsers unloggedUser = new UnloggedUsers();
+                unloggedUser.setName(unloggedUserDto.getName());
+                unloggedUser.setLastName(unloggedUserDto.getLastName());
+                unloggedUser.setEmail(unloggedUserDto.getEmail());
+
+                unloggedUser = unloggedUsersRepository.save(unloggedUser);
+                appointment.setUnloggedUser(unloggedUser);
+            } else {
+                return Utilities.generateResponse(HttpStatus.BAD_REQUEST,
+                        "Either a logged user or unlogged user information is required", "400");
+            }
 
             appointment = appointmentRepository.save(appointment);
 
@@ -137,9 +163,13 @@ public class AppointmentService {
                         uploadedDoc.setUploadedDate(LocalDate.now());
                         uploadedDoc.setDocument(docDto.getDocument());
                         uploadedDoc.setAppointment(appointment);
+                        uploadedDoc.setFileName(docDto.getFileName());
                         uploadedDoc.getRequiredDocuments().add(requiredDoc);
+                        requiredDoc.getUploadedDocuments().add(uploadedDoc);
 
                         uploadedDocs.add(uploadedDocumentRepository.save(uploadedDoc));
+
+                        requiredDocumentRepository.save(requiredDoc);
                     }
                 }
             }
@@ -209,7 +239,6 @@ public class AppointmentService {
 
         try {
             existingAppointment.setStartTime(appointmentDto.getStartTime());
-            existingAppointment.setEndTime(appointmentDto.getEndTime());
 
             if (appointmentDto.getStatus() != null && !appointmentDto.getStatus().isEmpty()) {
                 existingAppointment.setStatus(appointmentDto.getStatus());
@@ -264,16 +293,177 @@ public class AppointmentService {
                 return Utilities.generateResponse(HttpStatus.BAD_REQUEST, "User not found", "400");
             }
 
+            // Consulta las citas con estado "Finalizada"
             List<Appointments> appointments = appointmentRepository.findByUserAndStatus(optionalUser.get(), "Finalizada");
             if (appointments.isEmpty()) {
                 return Utilities.generateResponse(HttpStatus.NO_CONTENT, "No completed appointments found for this user", "204");
             }
 
-            return Utilities.ResponseWithData(HttpStatus.OK, "Completed appointments found", "200", appointments);
+            // Mapear las citas al DTO
+            List<PendingAppointmentDto> appointmentDTOs = appointments.stream().map(appointment -> {
+                PendingAppointmentDto dto = new PendingAppointmentDto();
+
+                // Información de la cita
+                dto.setId(appointment.getId());
+                dto.setUuid(appointment.getUuid());
+                dto.setDate(appointment.getDate());
+                dto.setStartTime(appointment.getStartTime());
+                dto.setEndTime(appointment.getEndTime());
+                dto.setCreationDate(appointment.getCreationDate());
+                dto.setStatus(appointment.getStatus());
+
+                // Información del usuario
+                UserModel user = appointment.getUser();
+                if (user != null) {
+                    dto.setUserUuid(user.getUuid());
+                    dto.setUserName(user.getName());
+                    dto.setUserLastName(user.getLastName());
+                    dto.setUserEmail(user.getEmail());
+                }
+
+                // Información del procedimiento
+                Procedures procedure = appointment.getProcedure();
+                if (procedure != null) {
+                    dto.setProcedureUuid(procedure.getUuid());
+                    dto.setProcedureName(procedure.getName());
+                }
+
+                // Información de la ventana
+                Window window = appointment.getWindow();
+                if (window != null) {
+                    dto.setWindowUuid(window.getUuid());
+                    dto.setWindowNumber(window.getWindowNumber());
+                }
+
+                return dto;
+            }).toList();
+
+            return Utilities.ResponseWithData(HttpStatus.OK, "Completed appointments found", "200", appointmentDTOs);
         } catch (IllegalArgumentException e) {
             return Utilities.generateResponse(HttpStatus.BAD_REQUEST, "Invalid UUID format", "400");
         } catch (Exception e) {
-            return Utilities.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error","500");
+            return Utilities.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error", "500");
+        }
+    }
+
+    @Transactional(readOnly = true)
+    public ResponseEntity<?> findAppointmentsByToday() {
+        try {
+            LocalDate today = LocalDate.now();
+
+            // Consulta todas las citas con fecha de hoy
+            List<Appointments> appointments = appointmentRepository.findByDate(today);
+            if (appointments.isEmpty()) {
+                return Utilities.generateResponse(HttpStatus.NO_CONTENT, "No appointments found for today", "204");
+            }
+
+            // Mapear las citas al DTO
+            List<PendingAppointmentDto> appointmentDTOs = appointments.stream().map(appointment -> {
+                PendingAppointmentDto dto = new PendingAppointmentDto();
+
+                // Información de la cita
+                dto.setId(appointment.getId());
+                dto.setUuid(appointment.getUuid());
+                dto.setDate(appointment.getDate());
+                dto.setStartTime(appointment.getStartTime());
+                dto.setEndTime(appointment.getEndTime());
+                dto.setCreationDate(appointment.getCreationDate());
+                dto.setStatus(appointment.getStatus());
+
+                // Información del usuario (si está registrado)
+                UserModel user = appointment.getUser();
+                if (user != null) {
+                    dto.setUserUuid(user.getUuid());
+                    dto.setUserName(user.getName());
+                    dto.setUserLastName(user.getLastName());
+                    dto.setUserEmail(user.getEmail());
+                } else if (appointment.getUnloggedUser() != null) { // Usuario no registrado
+                    UnloggedUsers unloggedUser = appointment.getUnloggedUser();
+                    dto.setUserName(unloggedUser.getName());
+                    dto.setUserLastName(unloggedUser.getLastName());
+                    dto.setUserEmail(unloggedUser.getEmail());
+                }
+
+                // Información del procedimiento
+                Procedures procedure = appointment.getProcedure();
+                if (procedure != null) {
+                    dto.setProcedureUuid(procedure.getUuid());
+                    dto.setProcedureName(procedure.getName());
+                }
+
+                // Información de la ventana
+                Window window = appointment.getWindow();
+                if (window != null) {
+                    dto.setWindowUuid(window.getUuid());
+                    dto.setWindowNumber(window.getWindowNumber());
+                }
+
+                return dto;
+            }).toList();
+
+            return Utilities.ResponseWithData(HttpStatus.OK, "Appointments found for today", "200", appointmentDTOs);
+        } catch (Exception e) {
+            return Utilities.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error: " + e.getMessage(), "500");
+        }
+    }
+
+    @Transactional(readOnly = true)
+    public ResponseEntity<?> findPendingAppointmentsByUser(UUID userUuid) {
+        try {
+            Optional<UserModel> optionalUser = userRepository.findByUuid(userUuid);
+            if (optionalUser.isEmpty()) {
+                return Utilities.generateResponse(HttpStatus.BAD_REQUEST, "User not found", "400");
+            }
+
+            List<Appointments> appointments = appointmentRepository.findByUserAndStatus(optionalUser.get(), "Pendiente");
+            if (appointments.isEmpty()) {
+                return Utilities.generateResponse(HttpStatus.NO_CONTENT, "No pending appointments found for this user", "204");
+            }
+
+            // Mapear las citas al DTO
+            List<PendingAppointmentDto> appointmentDTOs = appointments.stream().map(appointment -> {
+                PendingAppointmentDto dto = new PendingAppointmentDto();
+
+                // Información de la cita
+                dto.setId(appointment.getId());
+                dto.setUuid(appointment.getUuid());
+                dto.setDate(appointment.getDate());
+                dto.setStartTime(appointment.getStartTime());
+                dto.setEndTime(appointment.getEndTime());
+                dto.setCreationDate(appointment.getCreationDate());
+                dto.setStatus(appointment.getStatus());
+
+                // Información del usuario
+                UserModel user = appointment.getUser();
+                if (user != null) {
+                    dto.setUserUuid(user.getUuid());
+                    dto.setUserName(user.getName());
+                    dto.setUserLastName(user.getLastName());
+                    dto.setUserEmail(user.getEmail());
+                }
+
+                // Información del procedimiento
+                Procedures procedure = appointment.getProcedure();
+                if (procedure != null) {
+                    dto.setProcedureUuid(procedure.getUuid());
+                    dto.setProcedureName(procedure.getName());
+                }
+
+                // Información de la ventana
+                Window window = appointment.getWindow();
+                if (window != null) {
+                    dto.setWindowUuid(window.getUuid());
+                    dto.setWindowNumber(window.getWindowNumber());
+                }
+
+                return dto;
+            }).toList();
+
+            return Utilities.ResponseWithData(HttpStatus.OK, "Pending appointments found", "200", appointmentDTOs);
+        } catch (IllegalArgumentException e) {
+            return Utilities.generateResponse(HttpStatus.BAD_REQUEST, "Invalid UUID format", "400");
+        } catch (Exception e) {
+            return Utilities.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error", "500");
         }
     }
 

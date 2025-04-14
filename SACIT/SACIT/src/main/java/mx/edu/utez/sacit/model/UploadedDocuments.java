@@ -30,6 +30,9 @@ public class UploadedDocuments {
     @Column(name = "document", columnDefinition = "LONGBLOB")
     private byte[] document;
 
+    @Column(name = "file_name")
+    private String fileName;
+
     @ManyToOne
     @JoinColumn(name = "appointment_id")
     @JsonBackReference

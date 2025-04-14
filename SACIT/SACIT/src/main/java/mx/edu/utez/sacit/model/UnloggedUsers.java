@@ -5,37 +5,26 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
 import java.util.UUID;
+
 @Getter
 @Setter
 @NoArgsConstructor
 @Entity
-@Table(name = "available_schedules")
-public class AvailableSchedule {
+@Table(name = "unlogged_users")
+public class UnloggedUsers {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     @Column( updatable = false, nullable = false,unique = true)
     private UUID uuid;
+    private String name;
+    private String lastName;
+    private String email;
 
-    private LocalDate date;
-
-    @Column(name = "start_time")
-    private LocalTime startTime;
-
-    @Column(name = "end_time")
-    private LocalTime endTime;
-
-    private Boolean available;
-
-    @ManyToOne
-    @JoinColumn(name = "window_id")
-    private Window window;
 
     @PrePersist
-    public void generateUuid() {
+    public void generateUUID() {
         if (uuid == null) {
             uuid = UUID.randomUUID();
         }

@@ -1,16 +1,19 @@
 package mx.edu.utez.sacit.service;
 
 import org.springframework.stereotype.Service;
+
+import java.security.SecureRandom;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Random;
 
 @Service
 public class OtpService {
     private final Map<String, OtpDetails> otpStore = new HashMap<>();
 
     public String generateOtp(String email) {
-        String otp = String.valueOf(new Random().nextInt(999999 - 100000) + 100000);
+        SecureRandom secureRandom = new SecureRandom();
+        int otpInt = secureRandom.nextInt(900000) + 100000;
+        String otp = String.valueOf(otpInt);
         OtpDetails details = new OtpDetails(otp, System.currentTimeMillis() + (5 * 60 * 1000));
         otpStore.put(email, details);
         return otp;

@@ -2,9 +2,10 @@ package mx.edu.utez.sacit.service;
 
 import jakarta.transaction.Transactional;
 
+import mx.edu.utez.sacit.dto.PendingAppointmentDto;
 import mx.edu.utez.sacit.dto.WindowDTO;
-import mx.edu.utez.sacit.model.UserModel;
-import mx.edu.utez.sacit.model.Window;
+import mx.edu.utez.sacit.model.*;
+import mx.edu.utez.sacit.repository.AppointmentRepository;
 import mx.edu.utez.sacit.repository.UserRepository;
 import mx.edu.utez.sacit.repository.WindowRepository;
 
@@ -30,11 +31,13 @@ public class WindowService {
     private final WindowRepository repository;
     private final UserRepository userRepository;
     private final WindowRepository windowRepository;
+    private final AppointmentRepository appointmentRepository;
 
-    public WindowService(WindowRepository repository, UserRepository userRepository, WindowRepository windowRepository) {
+    public WindowService(WindowRepository repository, UserRepository userRepository, WindowRepository windowRepository, AppointmentRepository appointmentRepository) {
         this.repository = repository;
         this.userRepository = userRepository;
         this.windowRepository = windowRepository;
+        this.appointmentRepository = appointmentRepository;
     }
 
     public ResponseEntity<?> getAll() {
@@ -157,6 +160,66 @@ return Utilities.generateResponse(HttpStatus.BAD_REQUEST, "The user is already a
 
         } catch (IllegalArgumentException e) {
             return Utilities.generateResponse(HttpStatus.BAD_REQUEST, "Invalid UUID format.", "400");
+        } catch (Exception e) {
+            return Utilities.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error", "500");
+        }
+    }
+
+    public ResponseEntity<?> findAppointmentsByWindow(UUID windowUuid) {
+        try {
+            Optional<Window> optionalWindow = windowRepository.findByUuid(windowUuid);
+            if (optionalWindow.isEmpty()) {
+                return Utilities.generateResponse(HttpStatus.BAD_REQUEST, "Window not found", "400");
+            }
+
+            List<Appointments> appointments = appointmentRepository.findByWindow(optionalWindow.get());
+            if (appointments.isEmpty()) {
+                return Utilities.generateResponse(HttpStatus.NO_CONTENT, "No appointments found for this window", "204");
+            }
+
+            // Mapear las citas al DTO
+            List<PendingAppointmentDto> appointmentDTOs = appointments.stream().map(appointment -> {
+                PendingAppointmentDto dto = new PendingAppointmentDto();
+
+                // Información de la cita
+                dto.setId(appointment.getId());
+                dto.setUuid(appointment.getUuid());
+                dto.setDate(appointment.getDate());
+                dto.setStartTime(appointment.getStartTime());
+                dto.setEndTime(appointment.getEndTime());
+                dto.setCreationDate(appointment.getCreationDate());
+                dto.setStatus(appointment.getStatus());
+
+                if (appointment.getUser() != null) { // Usuario registrado
+                    UserModel user = appointment.getUser();
+                    dto.setUserUuid(user.getUuid());
+                    dto.setUserName(user.getName());
+                    dto.setUserLastName(user.getLastName());
+                    dto.setUserEmail(user.getEmail());
+                } else if (appointment.getUnloggedUser() != null) { // Usuario no registrado
+                    UnloggedUsers unloggedUser = appointment.getUnloggedUser();
+                    dto.setUserName(unloggedUser.getName());
+                    dto.setUserLastName(unloggedUser.getLastName());
+                    dto.setUserEmail(unloggedUser.getEmail());
+                }
+
+                // Información del procedimiento
+                Procedures procedure = appointment.getProcedure();
+                if (procedure != null) {
+                    dto.setProcedureUuid(procedure.getUuid());
+                    dto.setProcedureName(procedure.getName());
+                }
+
+                // Información de la ventana
+                dto.setWindowUuid(windowUuid); // Directamente desde el parámetro
+                dto.setWindowNumber(optionalWindow.get().getWindowNumber());
+
+                return dto;
+            }).toList();
+
+            return Utilities.ResponseWithData(HttpStatus.OK, "Appointments found for this window", "200", appointmentDTOs);
+        } catch (IllegalArgumentException e) {
+            return Utilities.generateResponse(HttpStatus.BAD_REQUEST, "Invalid UUID format", "400");
         } catch (Exception e) {
             return Utilities.generateResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error", "500");
         }

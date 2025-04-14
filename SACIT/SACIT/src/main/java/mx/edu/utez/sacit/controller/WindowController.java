@@ -74,4 +74,9 @@ public class WindowController {
         return Utilities.generateResponse(HttpStatus.OK, "Record deleted successfully.", "200");
     }
 
+    @GetMapping("/window/{windowUuid}/appointments")
+    public ResponseEntity<?> getAppointmentsByWindow(@PathVariable UUID windowUuid) {
+        return service.findAppointmentsByWindow(windowUuid);
+    }
+
 }
