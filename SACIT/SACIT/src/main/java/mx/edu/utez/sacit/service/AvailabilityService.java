@@ -7,10 +7,10 @@ import mx.edu.utez.sacit.repository.AppointmentRepository;
 import mx.edu.utez.sacit.repository.WindowRepository;
 import org.springframework.stereotype.Service;
 
+import java.security.SecureRandom;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
-import java.util.Random;
 
 @Service
 public class AvailabilityService {
@@ -35,8 +35,8 @@ public class AvailabilityService {
         if (availableWindows.isEmpty()) {
             return null;
         }
-        Random random = new Random();
-        return  availableWindows.get(random.nextInt(availableWindows.size()));
+        SecureRandom secureRandom = new SecureRandom();
+        return availableWindows.get(secureRandom.nextInt(availableWindows.size()));
     }
 
     private boolean isWindowAvailable(Window window, LocalDate date,

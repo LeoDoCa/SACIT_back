@@ -2,6 +2,7 @@ package mx.edu.utez.sacit.jwt;
 
 import io.jsonwebtoken.*;
 import mx.edu.utez.sacit.model.UserModel;
+import mx.edu.utez.sacit.repository.UserRepository;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
@@ -9,15 +10,40 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class JwtTokenUtil {
-    private static final long EXPIRE_DURATION = 24L * 60 * 60 * 1000;
+    private static final long EXPIRE_DURATION = 60L * 60 * 1000;
+    private final UserRepository userRepository;
     private static final Logger logger = LogManager.getLogger(JwtTokenUtil.class);
     @Value("${jwt.secret}")
     private String secretKey;
 
+    public JwtTokenUtil(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+
     public boolean validateAccessToken(String token) {
         try {
-            Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token);
+            Claims claims = Jwts.parser()
+                    .setSigningKey(secretKey)
+                    .parseClaimsJws(token)
+                    .getBody();
+
+            String subject = claims.getSubject();
+            String[] parts = subject.split(",\\s*");
+            if (parts.length != 2) {
+                logger.error("Invalid token subject format");
+                return false;
+            }
+
+            String email = parts[1];
+
+            UserModel user = userRepository.findByEmail(email);
+            if (user == null) {
+                logger.error("User from token no longer exists in the database");
+                return false;
+            }
+
             return true;
+
         } catch (ExpiredJwtException ex) {
             logger.error("Expired JWT {}", ex.getMessage());
         } catch (IllegalArgumentException ex) {

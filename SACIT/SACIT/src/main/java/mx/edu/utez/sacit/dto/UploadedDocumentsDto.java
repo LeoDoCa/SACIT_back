@@ -7,4 +7,5 @@ import java.util.UUID;
 public class UploadedDocumentsDto {
     private UUID requiredDocumentUuid;
     private byte[] document;
+    private String fileName;
 }

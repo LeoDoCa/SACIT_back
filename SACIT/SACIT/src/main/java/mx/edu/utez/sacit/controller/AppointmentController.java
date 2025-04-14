@@ -1,8 +1,11 @@
 package mx.edu.utez.sacit.controller;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import mx.edu.utez.sacit.dto.AppointmentDto;
+import mx.edu.utez.sacit.dto.UnloggedUserDto;
 import mx.edu.utez.sacit.dto.UploadedDocumentsDto;
 import mx.edu.utez.sacit.service.AppointmentService;
 import mx.edu.utez.sacit.service.UploadedDocumentsService;
@@ -32,7 +35,7 @@ public class AppointmentController {
         this.uploadedDocumentService = uploadedDocumentService;
     }
 
-    @GetMapping("/")
+    @GetMapping("/all")
     public ResponseEntity<?> getAll() {
         return appointmentService.findAll();
     }
@@ -47,26 +50,43 @@ public class AppointmentController {
         return appointmentService.findByUser(userUuid);
     }
 
+    @GetMapping("/user/{userUuid}/pending")
+    public ResponseEntity<?> getPendingAppointmentsByUser(@PathVariable UUID userUuid) {
+        return appointmentService.findPendingAppointmentsByUser(userUuid);
+    }
+
     @GetMapping("/procedure/{procedureUuid}")
     public ResponseEntity<?> getByProcedure(@PathVariable UUID procedureUuid) {
         return appointmentService.findByProcedure(procedureUuid);
     }
 
-    @PostMapping(value = "/user/{userUuid}/procedure/{procedureUuid}", consumes = "multipart/form-data")
+    @PostMapping(value = "/", consumes = "multipart/form-data")
     public ResponseEntity<?> saveWithDocuments(
-            @PathVariable UUID userUuid,
-            @PathVariable UUID procedureUuid,
+            @RequestParam(required = false) UUID userUuid,
+            @RequestParam UUID procedureUuid,
             MultipartHttpServletRequest request) {
 
         try {
             String appointmentJson = request.getParameter("appointment");
             ObjectMapper objectMapper = new ObjectMapper();
             objectMapper.registerModule(new JavaTimeModule());
+            objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+            objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
             AppointmentDto appointmentDto = objectMapper.readValue(appointmentJson, AppointmentDto.class);
 
             if (appointmentDto.getStartTime().isBefore(LocalTime.of(9, 0)) ||
                     appointmentDto.getStartTime().isAfter(LocalTime.of(15, 0))) {
                 return ResponseEntity.badRequest().body("Horario fuera del rango permitido (9:00-15:00)");
+            }
+
+            UnloggedUserDto unloggedUserDto = null;
+            if (userUuid == null) {
+                String unloggedUserJson = request.getParameter("unloggedUser");
+                if (unloggedUserJson == null || unloggedUserJson.isEmpty()) {
+                    return ResponseEntity.badRequest().body("Se requiere información de usuario no logueado");
+                }
+                unloggedUserDto = objectMapper.readValue(unloggedUserJson, UnloggedUserDto.class);
             }
 
             List<MultipartFile> files = request.getFiles("files").stream()
@@ -87,15 +107,19 @@ public class AppointmentController {
 
             List<UploadedDocumentsDto> documentDtos = new ArrayList<>();
             for (int i = 0; i < files.size(); i++) {
+                MultipartFile file = files.get(i);
+
                 UploadedDocumentsDto docDto = new UploadedDocumentsDto();
                 docDto.setRequiredDocumentUuid(UUID.fromString(documentUuids.get(i)));
-                docDto.setDocument(files.get(i).getBytes());
+                docDto.setDocument(file.getBytes());
+                docDto.setFileName(file.getOriginalFilename());
                 documentDtos.add(docDto);
             }
 
             return appointmentService.saveWithDocuments(
                     appointmentDto,
                     userUuid,
+                    unloggedUserDto,
                     procedureUuid,
                     documentDtos
             );
@@ -121,6 +145,11 @@ public class AppointmentController {
     @PatchMapping("/{uuid}/status")
     public ResponseEntity<?> updateStatus(@PathVariable UUID uuid, @RequestBody AppointmentDto appointmentDto) {
         return appointmentService.updateStatus(uuid, appointmentDto.getStatus());
+    }
+
+    @GetMapping("/today")
+    public ResponseEntity<?> getAppointmentsForToday() {
+        return appointmentService.findAppointmentsByToday();
     }
 
     @DeleteMapping("/{uuid}")

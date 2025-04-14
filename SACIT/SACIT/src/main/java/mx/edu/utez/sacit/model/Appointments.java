@@ -60,6 +60,11 @@ public class Appointments {
     private Set<UploadedDocuments> uploadedDocuments = new HashSet<>();
 
     @JsonIgnore
+    @ManyToOne(optional = true)
+    @JoinColumn(name = "unlogged_user_id", nullable = true)
+    private UnloggedUsers unloggedUser;
+
+    @JsonIgnore
     public Set<RequiredDocuments> getRequiredDocumentsForProcedure() {
         if (this.procedure != null) {
             return this.procedure.getRequieredDocuments();

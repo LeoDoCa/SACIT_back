@@ -42,13 +42,7 @@ public class Window {
     @JoinColumn(name = "user_id")
     @JsonProperty(value = "attendant")
     @JsonIgnoreProperties({"password", "creationDate", "role", "createdProcedures", "attendedWindows", "appointments"})
-
     private UserModel attendant;
-
-
-    @JsonIgnore
-    @OneToMany(mappedBy = "window")
-    private Set<AvailableSchedule> availableSchedules = new HashSet<>();
 
     @JsonIgnore
     @OneToMany(mappedBy = "window")
