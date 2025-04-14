@@ -47,6 +47,7 @@ public class UserController {
     @GetMapping("/user")
     public List<UserModel> users() {
         logger.info("Solicitud para obtener todos los usuarios");
+        transactionLogService.logTransaction("OBTENER", "users", "0", "Obtener_Datos");
         return this.userService.getAll();
     }
 
@@ -60,6 +61,7 @@ public class UserController {
                 return Utilities.generateResponse(HttpStatus.NOT_FOUND, "No se encontraron usuarios con el rol proporcionado", "404");
             }
             logger.info("Usuarios encontrados con el rol {}: {}", roleName, users.size());
+            transactionLogService.logTransaction("OBTENER", "windows", "0", "Obtener_Roles");
             return new ResponseEntity<>(users, HttpStatus.OK);
         } catch (Exception e) {
             logger.error("Error al consultar usuarios por rol: {}", roleName, e);
@@ -70,6 +72,7 @@ public class UserController {
     @GetMapping("/user/{uuid}")
     public UserModel getByUuid(@PathVariable("uuid") UUID uuid) {
         logger.info("Solicitud para obtener usuario con UUID: {}", uuid);
+        transactionLogService.logTransaction("OBTENER", "users", uuid.toString(), "Obtener_user_UUID");
         return this.userService.findByUuid(uuid);
     }
 
@@ -110,7 +113,7 @@ public class UserController {
                     "<h3>Atentamente,</h3>" +
                     "<h3>El equipo de sacit</h3>";
             emailService.sendSimpleEmail(request.getEmail(), title, subject, message);
-            transactionLogService.logTransaction("REGISTRO", "users", request.getId(), "Usuario_Registrado");
+            transactionLogService.logTransaction("REGISTRO", "users", request.getUuid().toString(), "Usuario_Registrado");
             return Utilities.generateResponse(HttpStatus.OK, "Record created successfully.", "200");
         } catch (Exception e) {
             logger.error("Error al registrar usuario: {}", request.getEmail(), e);
@@ -142,7 +145,7 @@ public class UserController {
 
                 this.userService.save(user);
                 logger.info("Usuario actualizado correctamente: {}", uuid);
-                transactionLogService.logTransaction("ACTUALIZACION", "users", user.getId(), "Usuario_Actualizado");
+                transactionLogService.logTransaction("ACTUALIZACION", "users", user.getUuid().toString(), "Usuario_Actualizado");
                 return Utilities.generateResponse(HttpStatus.OK, "Record updated successfully.", "200");
             }
         } catch (Exception e) {
@@ -178,7 +181,7 @@ public class UserController {
                     "Haz clic en el enlace para recuperar tu contraseña: <a href='" + resetLink + "'>Recuperar contraseña</a>"
             );
             logger.info("Correo de recuperación enviado a: {}", email);
-            transactionLogService.logTransaction("RECUPERACION_CONTRASENA", "users", user.getId(), "Token_Generado");
+            transactionLogService.logTransaction("RECUPERACION_CONTRASENA", "users", user.getUuid().toString(), "Token_Generado");
             return new ResponseEntity<>(Utilities.generateResponse(HttpStatus.OK, "Token: " + token, "200"), HttpStatus.OK);
         } catch (Exception e) {
             logger.error("Error durante la recuperación de contraseña para el correo {}: {}", email, e.getMessage(), e);
@@ -215,7 +218,7 @@ public class UserController {
             user.setPassword(passwordEncoder.encode(newPassword));
             passwordRepository.delete(resetToken);
             logger.info("Contraseña restablecida exitosamente para el usuario: {}", user.getEmail());
-            transactionLogService.logTransaction("CAMBIO_CONTRASENA", "users", user.getId(), "Contraseña_Cambiada");
+            transactionLogService.logTransaction("CAMBIO_CONTRASENA", "users", user.getUuid().toString(), "Contraseña_Cambiada");
             return new ResponseEntity<>(Utilities.generateResponse(HttpStatus.OK, "Password reset successfully","200"),
                     HttpStatus.OK);
         } catch (Exception e) {
@@ -237,7 +240,7 @@ public class UserController {
             } else {
                 this.userService.delete(uuid);
                 logger.info("Usuario eliminado correctamente: {}", uuid);
-                transactionLogService.logTransaction("ELIMINACION", "users", user.getId(), "Usuario_Eliminado");
+                transactionLogService.logTransaction("ELIMINACION", "users", user.getUuid().toString(), "Usuario_Eliminado");
                 return Utilities.generateResponse(HttpStatus.OK, "Record deleted successfully.", "200");
             }
         } catch (Exception e) {

@@ -9,6 +9,7 @@ import mx.edu.utez.sacit.dto.UnloggedUserDto;
 import mx.edu.utez.sacit.dto.UploadedDocumentsDto;
 import mx.edu.utez.sacit.service.AppointmentService;
 import mx.edu.utez.sacit.service.UploadedDocumentsService;
+import mx.edu.utez.sacit.service.TransactionLogService;
 
 import mx.edu.utez.sacit.utils.Utilities;
 import org.springframework.http.HttpStatus;
@@ -27,36 +28,43 @@ import java.util.stream.Collectors;
 public class AppointmentController {
 
     private final AppointmentService appointmentService;
+    private final TransactionLogService transactionLogService;
 
     private final UploadedDocumentsService uploadedDocumentService;
 
-    public AppointmentController(AppointmentService appointmentService, UploadedDocumentsService uploadedDocumentService) {
+    public AppointmentController(AppointmentService appointmentService, UploadedDocumentsService uploadedDocumentService, TransactionLogService transactionLogService) {
         this.appointmentService = appointmentService;
         this.uploadedDocumentService = uploadedDocumentService;
+        this.transactionLogService = transactionLogService;
     }
 
     @GetMapping("/all")
     public ResponseEntity<?> getAll() {
+        transactionLogService.logTransaction("OBTENER", "appointments", "0", "Obtener_Appointments");
         return appointmentService.findAll();
     }
 
     @GetMapping("/{uuid}")
     public ResponseEntity<?> getOne(@PathVariable UUID uuid) {
+        transactionLogService.logTransaction("OBTENER", "appointments", uuid.toString(), "Obtener_Appointment_UUID");
         return appointmentService.findByUuid(uuid);
     }
 
     @GetMapping("/user/{userUuid}")
     public ResponseEntity<?> getAppointmentsByUser(@PathVariable UUID userUuid) {
+        transactionLogService.logTransaction("OBTENER", "appointments", userUuid.toString(), "Obtener_Appointment_User_UUID");
         return appointmentService.findByUser(userUuid);
     }
 
     @GetMapping("/user/{userUuid}/pending")
     public ResponseEntity<?> getPendingAppointmentsByUser(@PathVariable UUID userUuid) {
+        transactionLogService.logTransaction("OBTENER", "appointments", userUuid.toString(), "Obtener_Appointment_User_UUID_Pending");
         return appointmentService.findPendingAppointmentsByUser(userUuid);
     }
 
     @GetMapping("/procedure/{procedureUuid}")
     public ResponseEntity<?> getByProcedure(@PathVariable UUID procedureUuid) {
+        transactionLogService.logTransaction("OBTENER", "appointments", procedureUuid.toString(), "Obtener_Appointment_Procedure_UUID");
         return appointmentService.findByProcedure(procedureUuid);
     }
 
@@ -115,7 +123,7 @@ public class AppointmentController {
                 docDto.setFileName(file.getOriginalFilename());
                 documentDtos.add(docDto);
             }
-
+            transactionLogService.logTransaction("REGISTRO", "appointments", userUuid.toString(), "Appointment_Cread0");
             return appointmentService.saveWithDocuments(
                     appointmentDto,
                     userUuid,
@@ -134,11 +142,13 @@ public class AppointmentController {
 
     @GetMapping("/{appointmentUuid}/documents")
     public ResponseEntity<?> getDocumentsForAppointment(@PathVariable UUID appointmentUuid) {
+        transactionLogService.logTransaction("OBTENER", "appointments", appointmentUuid.toString(), "Obtener_Appointment_Documents_UUID");
         return uploadedDocumentService.getUploadedDocumentsForAppointment(appointmentUuid);
     }
 
     @PutMapping("/{uuid}")
     public ResponseEntity<?> update(@PathVariable UUID uuid, @RequestBody AppointmentDto appointmentDto) {
+        transactionLogService.logTransaction("ACTUALIZAR", "appointments", appointmentDto.getUuid().toString(), "Actualizar_Appointment");
         return appointmentService.update(uuid, appointmentDto);
     }
 
@@ -149,11 +159,13 @@ public class AppointmentController {
 
     @GetMapping("/today")
     public ResponseEntity<?> getAppointmentsForToday() {
+        transactionLogService.logTransaction("OBTENER", "appointments", "0", "Obtener_Appointment_Today");
         return appointmentService.findAppointmentsByToday();
     }
 
     @DeleteMapping("/{uuid}")
     public ResponseEntity<?> delete(@PathVariable UUID uuid) {
+        transactionLogService.logTransaction("ELIMINACION", "appointments", uuid.toString(), "Appointment_Eliminado");
         return appointmentService.delete(uuid);
     }
 
