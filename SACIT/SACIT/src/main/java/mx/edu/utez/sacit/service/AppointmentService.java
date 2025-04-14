@@ -293,17 +293,14 @@ public class AppointmentService {
                 return Utilities.generateResponse(HttpStatus.BAD_REQUEST, "User not found", "400");
             }
 
-            // Consulta las citas con estado "Finalizada"
             List<Appointments> appointments = appointmentRepository.findByUserAndStatus(optionalUser.get(), "Finalizada");
             if (appointments.isEmpty()) {
                 return Utilities.generateResponse(HttpStatus.NO_CONTENT, "No completed appointments found for this user", "204");
             }
 
-            // Mapear las citas al DTO
             List<PendingAppointmentDto> appointmentDTOs = appointments.stream().map(appointment -> {
                 PendingAppointmentDto dto = new PendingAppointmentDto();
 
-                // Información de la cita
                 dto.setId(appointment.getId());
                 dto.setUuid(appointment.getUuid());
                 dto.setDate(appointment.getDate());
@@ -312,7 +309,6 @@ public class AppointmentService {
                 dto.setCreationDate(appointment.getCreationDate());
                 dto.setStatus(appointment.getStatus());
 
-                // Información del usuario
                 UserModel user = appointment.getUser();
                 if (user != null) {
                     dto.setUserUuid(user.getUuid());
@@ -321,14 +317,12 @@ public class AppointmentService {
                     dto.setUserEmail(user.getEmail());
                 }
 
-                // Información del procedimiento
                 Procedures procedure = appointment.getProcedure();
                 if (procedure != null) {
                     dto.setProcedureUuid(procedure.getUuid());
                     dto.setProcedureName(procedure.getName());
                 }
 
-                // Información de la ventana
                 Window window = appointment.getWindow();
                 if (window != null) {
                     dto.setWindowUuid(window.getUuid());
@@ -351,17 +345,14 @@ public class AppointmentService {
         try {
             LocalDate today = LocalDate.now();
 
-            // Consulta todas las citas con fecha de hoy
             List<Appointments> appointments = appointmentRepository.findByDate(today);
             if (appointments.isEmpty()) {
                 return Utilities.generateResponse(HttpStatus.NO_CONTENT, "No appointments found for today", "204");
             }
 
-            // Mapear las citas al DTO
             List<PendingAppointmentDto> appointmentDTOs = appointments.stream().map(appointment -> {
                 PendingAppointmentDto dto = new PendingAppointmentDto();
 
-                // Información de la cita
                 dto.setId(appointment.getId());
                 dto.setUuid(appointment.getUuid());
                 dto.setDate(appointment.getDate());
@@ -370,28 +361,25 @@ public class AppointmentService {
                 dto.setCreationDate(appointment.getCreationDate());
                 dto.setStatus(appointment.getStatus());
 
-                // Información del usuario (si está registrado)
                 UserModel user = appointment.getUser();
                 if (user != null) {
                     dto.setUserUuid(user.getUuid());
                     dto.setUserName(user.getName());
                     dto.setUserLastName(user.getLastName());
                     dto.setUserEmail(user.getEmail());
-                } else if (appointment.getUnloggedUser() != null) { // Usuario no registrado
+                } else if (appointment.getUnloggedUser() != null) { 
                     UnloggedUsers unloggedUser = appointment.getUnloggedUser();
                     dto.setUserName(unloggedUser.getName());
                     dto.setUserLastName(unloggedUser.getLastName());
                     dto.setUserEmail(unloggedUser.getEmail());
                 }
 
-                // Información del procedimiento
                 Procedures procedure = appointment.getProcedure();
                 if (procedure != null) {
                     dto.setProcedureUuid(procedure.getUuid());
                     dto.setProcedureName(procedure.getName());
                 }
 
-                // Información de la ventana
                 Window window = appointment.getWindow();
                 if (window != null) {
                     dto.setWindowUuid(window.getUuid());
@@ -420,11 +408,9 @@ public class AppointmentService {
                 return Utilities.generateResponse(HttpStatus.NO_CONTENT, "No pending appointments found for this user", "204");
             }
 
-            // Mapear las citas al DTO
             List<PendingAppointmentDto> appointmentDTOs = appointments.stream().map(appointment -> {
                 PendingAppointmentDto dto = new PendingAppointmentDto();
 
-                // Información de la cita
                 dto.setId(appointment.getId());
                 dto.setUuid(appointment.getUuid());
                 dto.setDate(appointment.getDate());
@@ -433,7 +419,6 @@ public class AppointmentService {
                 dto.setCreationDate(appointment.getCreationDate());
                 dto.setStatus(appointment.getStatus());
 
-                // Información del usuario
                 UserModel user = appointment.getUser();
                 if (user != null) {
                     dto.setUserUuid(user.getUuid());
@@ -442,14 +427,12 @@ public class AppointmentService {
                     dto.setUserEmail(user.getEmail());
                 }
 
-                // Información del procedimiento
                 Procedures procedure = appointment.getProcedure();
                 if (procedure != null) {
                     dto.setProcedureUuid(procedure.getUuid());
                     dto.setProcedureName(procedure.getName());
                 }
 
-                // Información de la ventana
                 Window window = appointment.getWindow();
                 if (window != null) {
                     dto.setWindowUuid(window.getUuid());
