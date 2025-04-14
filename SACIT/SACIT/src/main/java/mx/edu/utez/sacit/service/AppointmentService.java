@@ -108,7 +108,7 @@ public class AppointmentService {
             }
 
             LocalTime endTime = appointmentDto.getStartTime()
-                    .plusMinutes(procedure.getStimatedTime() + 15);
+                    .plusMinutes(procedure.getStimatedTime());
 
             Appointments appointment = new Appointments();
             appointment.setUuid(UUID.randomUUID());
