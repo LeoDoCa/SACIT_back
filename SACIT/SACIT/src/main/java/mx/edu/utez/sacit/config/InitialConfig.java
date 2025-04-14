@@ -35,36 +35,9 @@ public class InitialConfig implements CommandLineRunner {
         RoleModel userRole = getOrCreateRole("ROLE_USER");
         RoleModel windowRole = getOrCreateRole("ROLE_WINDOW");
 
-        Optional<UserModel> adminUserOpt = Optional.ofNullable(userRepository.findByEmail("sacit3mail@gmail.com"));
-
-        if (adminUserOpt.isEmpty()) {
-            UserModel user = new UserModel();
-            user.setUuid(UUID.randomUUID());
-            user.setName("Leonardo");
-            user.setLastName("Dorantes");
-            user.setEmail("sacit3mail@gmail.com");
-            user.setPassword(passwordEncoder.encode(adminPassword));
-            user.setRole(adminRole);
-            userRepository.save(user);
-        }
-
-        UserModel user = new UserModel();
-        user.setUuid(UUID.randomUUID());
-        user.setName("Daniel");
-        user.setLastName("Castañeda");
-        user.setEmail("20223tn049@utez.edu.mx");
-        user.setPassword(passwordEncoder.encode(userPassword));
-        user.setRole(userRole);
-        userRepository.save(user);
-
-        UserModel userWindow = new UserModel();
-        userWindow.setUuid(UUID.randomUUID());
-        userWindow.setName("Moises");
-        userWindow.setLastName("Gonzalez");
-        userWindow.setEmail("20223tn055@utez.edu.mx");
-        userWindow.setPassword(passwordEncoder.encode(windowPassword));
-        userWindow.setRole(windowRole);
-        userRepository.save(userWindow);
+        createUserIfNotExists("sacit3mail@gmail.com", "Leonardo", "Dorantes", adminPassword, adminRole);
+        createUserIfNotExists("20223tn049@utez.edu.mx", "Daniel", "Castañeda", userPassword, userRole);
+        createUserIfNotExists("20223tn055@utez.edu.mx", "Moises", "Gonzalez", windowPassword, windowRole);
     }
 
     private RoleModel getOrCreateRole(String roleName) {
@@ -77,6 +50,21 @@ public class InitialConfig implements CommandLineRunner {
             newRole.setRole(roleName);
             newRole.setUuid(UUID.randomUUID());
             return roleRepository.save(newRole);
+        }
+    }
+
+    private void createUserIfNotExists(String email, String name, String lastName, String password, RoleModel role) {
+        Optional<UserModel> userOpt = Optional.ofNullable(userRepository.findByEmail(email));
+
+        if (userOpt.isEmpty()) {
+            UserModel user = new UserModel();
+            user.setUuid(UUID.randomUUID());
+            user.setName(name);
+            user.setLastName(lastName);
+            user.setEmail(email);
+            user.setPassword(passwordEncoder.encode(password));
+            user.setRole(role);
+            userRepository.save(user);
         }
     }
 }
