@@ -61,6 +61,7 @@ public class JwtTokenUtil {
     public String generatedToken(UserModel usuario){
         return Jwts.builder()
                 .setSubject(String.format("%s, %s", usuario.getId(), usuario.getEmail()))
+                .claim("uuid", usuario.getUuid().toString())
                 .setIssuer("sacit")
                 .setIssuedAt(new java.util.Date())
                 .setExpiration(new java.util.Date(System.currentTimeMillis() + EXPIRE_DURATION))
