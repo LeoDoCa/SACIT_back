@@ -81,7 +81,7 @@ return Utilities.generateResponse(HttpStatus.NOT_FOUND,"Invalid UUID","400");
             procedure.setCost(proceduresDto.getCost());
             procedure.setStimatedTime(proceduresDto.getEstimatedTime());
             procedure.setCreationDate(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE));
-            procedure.setStatus("ACTIVE");
+            procedure.setStatus("Activo");
             procedure.setCreator(optionalUser.get());
 
             if (proceduresDto.getRequiredDocumentsNames() != null
