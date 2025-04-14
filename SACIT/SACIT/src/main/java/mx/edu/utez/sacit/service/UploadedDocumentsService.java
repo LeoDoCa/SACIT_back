@@ -30,31 +30,26 @@ public class UploadedDocumentsService {
     @Transactional(readOnly = true)
     public ResponseEntity<?> getUploadedDocumentsForAppointment(UUID appointmentUuid) {
         try {
-            // Buscar la cita asociada al UUID
             Appointments appointment = appointmentRepository.findByUuid(appointmentUuid);
             if (appointment == null) {
                 return Utilities.generateResponse(HttpStatus.NOT_FOUND, "Cita no encontrada", "404");
             }
 
-            // Buscar los documentos subidos asociados a la cita
             List<UploadedDocuments> uploadedDocs = uploadedDocumentRepository.findByAppointment(appointment);
             if (uploadedDocs.isEmpty()) {
                 return Utilities.generateResponse(HttpStatus.NO_CONTENT, "No se encontraron documentos", "204");
             }
 
-            // Crear una lista para almacenar los documentos codificados
             List<Map<String, String>> encodedDocuments = new ArrayList<>();
 
             for (UploadedDocuments document : uploadedDocs) {
                 byte[] documentBytes = document.getDocument();
                 if (documentBytes == null || documentBytes.length == 0) {
-                    continue; // Saltar documentos vacíos o corruptos
+                    continue;
                 }
 
-                // Codificar el contenido en Base64
                 String encodedContent = Base64.getEncoder().encodeToString(documentBytes);
 
-                // Crear el mapa de respuesta para cada documento
                 Map<String, String> documentResponse = new HashMap<>();
                 documentResponse.put("fileName", document.getFileName());
                 documentResponse.put("fileContent", encodedContent);
@@ -62,7 +57,6 @@ public class UploadedDocumentsService {
                 encodedDocuments.add(documentResponse);
             }
 
-            // Retornar la lista de documentos codificados
             return ResponseEntity.ok(encodedDocuments);
 
         } catch (Exception e) {
