@@ -104,14 +104,14 @@ public class UserController {
             logger.info("Usuario registrado exitosamente: {}", request.getEmail());
 
             String title = "Bienvenido " + request.getName();
-            String subject = "¡Te has registrado exitosamente en el sistema sacit!";
-            String message = "<h2>¡Te damos la más cordial bienvenida al sistema sacit!</h2>" +
+            String subject = "¡Te has registrado exitosamente en el sistema SACIT!";
+            String message = "<h2>¡Te damos la más cordial bienvenida al sistema SACIT!</h2>" +
                     "<p>Tu registro se ha completado exitosamente. Ahora podrás acceder a una plataforma donde gestionarás de manera "
                     +
                     "eficiente los trámites de tu elección.</p>" +
                     "<p>Recuerda mantener tus credenciales seguras y no compartirlas con nadie.</p>" +
                     "<h3>Atentamente,</h3>" +
-                    "<h3>El equipo de sacit</h3>";
+                    "<h3>El equipo de SACIT</h3>";
             emailService.sendSimpleEmail(request.getEmail(), title, subject, message);
             transactionLogService.logTransaction("REGISTRO", "users", "Usuario_Registrado");
             return Utilities.generateResponse(HttpStatus.OK, "Record created successfully.", "200");

@@ -18,6 +18,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
@@ -172,9 +173,11 @@ return Utilities.generateResponse(HttpStatus.BAD_REQUEST, "The user is already a
                 return Utilities.generateResponse(HttpStatus.BAD_REQUEST, "Window not found", "400");
             }
 
-            List<Appointments> appointments = appointmentRepository.findByWindow(optionalWindow.get());
+            LocalDate today = LocalDate.now();
+
+            List<Appointments> appointments = appointmentRepository.findByWindowAndDate(optionalWindow.get(), today);
             if (appointments.isEmpty()) {
-                return Utilities.generateResponse(HttpStatus.NO_CONTENT, "No appointments found for this window", "204");
+                return Utilities.generateResponse(HttpStatus.NO_CONTENT, "No appointments found for this window today", "204");
             }
 
             List<PendingAppointmentDto> appointmentDTOs = appointments.stream().map(appointment -> {
