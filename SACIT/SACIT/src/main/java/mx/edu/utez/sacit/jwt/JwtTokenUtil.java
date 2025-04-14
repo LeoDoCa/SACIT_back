@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class JwtTokenUtil {
-    private static final long EXPIRE_DURATION = 60L * 60 * 1000;
+    private static final long EXPIRE_DURATION = 2L * 60 * 60 * 1000;
     private final UserRepository userRepository;
     private static final Logger logger = LogManager.getLogger(JwtTokenUtil.class);
     @Value("${jwt.secret}")

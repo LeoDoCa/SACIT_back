@@ -92,6 +92,20 @@ public class AppointmentService {
 
             Procedures procedure = optionalProcedure.get();
 
+            List<Appointments> existingAppointments = null;
+            if (userUuid != null) {
+                existingAppointments = appointmentRepository.findByUserUuidAndDateAndStartTime(
+                        userUuid, appointmentDto.getDate(), appointmentDto.getStartTime());
+            } else if (unloggedUserDto != null) {
+                existingAppointments = appointmentRepository.findByUnloggedUserEmailAndDateAndStartTime(
+                        unloggedUserDto.getEmail(), appointmentDto.getDate(), appointmentDto.getStartTime());
+            }
+
+            if (existingAppointments != null && !existingAppointments.isEmpty()) {
+                return Utilities.generateResponse(HttpStatus.CONFLICT,
+                        "Ya tienes una cita agendada en este día a esta hora", "409");
+            }
+
             boolean allMandatoryDocumentsPresent = validateRequiredDocuments(procedure, documents);
             if (!allMandatoryDocumentsPresent) {
                 return Utilities.generateResponse(HttpStatus.BAD_REQUEST,
