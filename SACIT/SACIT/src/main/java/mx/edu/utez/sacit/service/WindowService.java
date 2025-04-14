@@ -177,11 +177,9 @@ return Utilities.generateResponse(HttpStatus.BAD_REQUEST, "The user is already a
                 return Utilities.generateResponse(HttpStatus.NO_CONTENT, "No appointments found for this window", "204");
             }
 
-            // Mapear las citas al DTO
             List<PendingAppointmentDto> appointmentDTOs = appointments.stream().map(appointment -> {
                 PendingAppointmentDto dto = new PendingAppointmentDto();
 
-                // Información de la cita
                 dto.setId(appointment.getId());
                 dto.setUuid(appointment.getUuid());
                 dto.setDate(appointment.getDate());
@@ -190,28 +188,26 @@ return Utilities.generateResponse(HttpStatus.BAD_REQUEST, "The user is already a
                 dto.setCreationDate(appointment.getCreationDate());
                 dto.setStatus(appointment.getStatus());
 
-                if (appointment.getUser() != null) { // Usuario registrado
+                if (appointment.getUser() != null) { 
                     UserModel user = appointment.getUser();
                     dto.setUserUuid(user.getUuid());
                     dto.setUserName(user.getName());
                     dto.setUserLastName(user.getLastName());
                     dto.setUserEmail(user.getEmail());
-                } else if (appointment.getUnloggedUser() != null) { // Usuario no registrado
+                } else if (appointment.getUnloggedUser() != null) { 
                     UnloggedUsers unloggedUser = appointment.getUnloggedUser();
                     dto.setUserName(unloggedUser.getName());
                     dto.setUserLastName(unloggedUser.getLastName());
                     dto.setUserEmail(unloggedUser.getEmail());
                 }
 
-                // Información del procedimiento
                 Procedures procedure = appointment.getProcedure();
                 if (procedure != null) {
                     dto.setProcedureUuid(procedure.getUuid());
                     dto.setProcedureName(procedure.getName());
                 }
 
-                // Información de la ventana
-                dto.setWindowUuid(windowUuid); // Directamente desde el parámetro
+                dto.setWindowUuid(windowUuid); 
                 dto.setWindowNumber(optionalWindow.get().getWindowNumber());
 
                 return dto;
