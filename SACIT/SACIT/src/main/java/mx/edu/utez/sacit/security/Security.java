@@ -79,7 +79,7 @@ public class Security {
                         })
                 )
                 .authorizeHttpRequests(auth -> {
-                    auth.requestMatchers("/api/login", "/api/send-otp", "/api/verify-otp", "/api/validate-credentials", "/api/register", "/api/recover-password-email", "/api/reset-password/{token}", "/api/validate-token/**","/api/procedures/","api/procedures/{uuid}","/api/required-documents/","/api/required-documents/{uuid}", "/api/appointments/")
+                    auth.requestMatchers("/api/login", "/api/send-otp", "/api/verify-otp", "/api/validate-credentials", "/api/register", "/api/recover-password-email", "/api/reset-password/{token}", "/api/validate-token/**","/api/procedures/all","api/procedures/{uuid}","/api/required-documents/","/api/required-documents/{uuid}", "/api/appointments/", "/api/availability/available-times", "/api/availability/")
                             .permitAll();
 
                     for(String route : USER_LIST) {

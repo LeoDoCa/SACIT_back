@@ -16,4 +16,6 @@ public interface AppointmentRepository extends JpaRepository<Appointments, Integ
     List<Appointments> findByWindow(Window window);
     List<Appointments> findByUserAndStatus(UserModel user, String status);
     List<Appointments> findByDate(LocalDate date);
+
+    List<Appointments> findByDateAndStatusNot(LocalDate date, String cancelled);
 }
