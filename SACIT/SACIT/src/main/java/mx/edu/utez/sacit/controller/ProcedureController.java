@@ -20,7 +20,7 @@ public class ProcedureController {
         this.transactionLogService = transactionLogService;
     }
 
-    @GetMapping("/")
+    @GetMapping("/all")
     public ResponseEntity<?> getAll() {
         transactionLogService.logTransaction("OBTENER", "procedures", "Obtener_Procedures");
         return procedureService.findAll();
@@ -32,7 +32,7 @@ public class ProcedureController {
         return procedureService.findByUuid(uuid);
     }
 
-    @PostMapping("/")
+    @PostMapping("/new")
     public ResponseEntity<?> save(@RequestBody ProceduresDto proceduresDto) {
         transactionLogService.logTransaction("REGISTRAR", "procedures", "Procedure_Creado");
         return procedureService.save(proceduresDto);
