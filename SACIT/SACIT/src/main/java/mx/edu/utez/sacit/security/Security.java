@@ -46,6 +46,7 @@ public class Security {
             "/api/appointments/**",
             "/api/appointments/today",
             "/api/procedures/**",
+            "/api/procedures/new",
             "/api/required-documents/",
     };
 
