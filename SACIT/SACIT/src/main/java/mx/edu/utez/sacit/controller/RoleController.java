@@ -30,14 +30,14 @@ public class RoleController {
     @GetMapping("/role")
     public List<RoleModel> roles() {
         logger.info("Solicitud para obtener todos los roles");
-        transactionLogService.logTransaction("OBTENER", "roles", "0", "Obtener_Roles");
+        transactionLogService.logTransaction("OBTENER", "roles", "Obtener_Roles");
         return roleService.getAll();
     }
 
     @GetMapping("/role/{uuid}")
     public ResponseEntity getByUuid(@PathVariable UUID uuid){
         logger.info("Solicitud para obtener un rol por su UUID: {}", uuid);
-        transactionLogService.logTransaction("OBTENER", "roles", uuid.toString(), "Obtener_Rol_UUID");
+        transactionLogService.logTransaction("OBTENER", "roles", "Obtener_Rol_UUID");
         return roleService.findByUuid(uuid)
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
@@ -46,14 +46,14 @@ public class RoleController {
     public ResponseEntity save(@RequestBody RoleModel role){
         this.roleService.saveRole(role);
         logger.info("Solicitud para registrar un nuevo rol: {}", role);
-        transactionLogService.logTransaction("REGISTRAR", "roles", role.getUuid().toString(), "Rol_Creado");
+        transactionLogService.logTransaction("REGISTRAR", "roles", "Rol_Creado");
         return Utilities.generateResponse(HttpStatus.OK, "Record created successfully.",SUCCESS_CODE);
     }
 
     @PutMapping("/role/{uuid}")
     public ResponseEntity<RoleModel> update (@PathVariable UUID uuid, @RequestBody RoleModel role){
         logger.info("Solicitud para actualizar un rol: {}", role);
-        transactionLogService.logTransaction("REGISTRAR", "roles", role.getUuid().toString(), "Rol_Creado");
+        transactionLogService.logTransaction("REGISTRAR", "roles", "Rol_Creado");
         return roleService.findByUuid(uuid)
                 .map(roleObj ->{
                     roleObj.setRole(role.getRole());
@@ -65,7 +65,7 @@ public class RoleController {
     @DeleteMapping("/role/{uuid}")
     public ResponseEntity<RoleModel> delete(@PathVariable UUID uuid){
         logger.warn("Solicitud para eliminar un rol por su UUID: {}", uuid);
-        transactionLogService.logTransaction("ELIMINACION", "roles", uuid.toString(), "Rol_Eliminado");
+        transactionLogService.logTransaction("ELIMINACION", "roles", "Rol_Eliminado");
         return roleService. findByUuid(uuid)
                 .map(role -> {
                     roleService.delete(uuid);

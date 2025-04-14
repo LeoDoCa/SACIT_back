@@ -22,25 +22,25 @@ public class ProcedureController {
 
     @GetMapping("/")
     public ResponseEntity<?> getAll() {
-        transactionLogService.logTransaction("OBTENER", "procedures", "0", "Obtener_Procedures");
+        transactionLogService.logTransaction("OBTENER", "procedures", "Obtener_Procedures");
         return procedureService.findAll();
     }
 
     @GetMapping("/{uuid}")
     public ResponseEntity<?> getOne(@PathVariable UUID uuid) {
-        transactionLogService.logTransaction("OBTENER", "procedures", uuid.toString(), "Obtener_Procedure_UUID");
+        transactionLogService.logTransaction("OBTENER", "procedures", "Obtener_Procedure_UUID");
         return procedureService.findByUuid(uuid);
     }
 
     @PostMapping("/")
     public ResponseEntity<?> save(@RequestBody ProceduresDto proceduresDto) {
-        transactionLogService.logTransaction("REGISTRAR", "procedures", proceduresDto.getUuid().toString(), "Procedure_Creado");
+        transactionLogService.logTransaction("REGISTRAR", "procedures", "Procedure_Creado");
         return procedureService.save(proceduresDto);
     }
 
     @PutMapping("/{uuid}")
     public ResponseEntity<?> update(@PathVariable UUID uuid, @RequestBody ProceduresDto proceduresDto) {
-        transactionLogService.logTransaction("ACTUALIZAR", "procedures", uuid.toString(), "Procedure_Actualizado");
+        transactionLogService.logTransaction("ACTUALIZAR", "procedures", "Procedure_Actualizado");
         return procedureService.update(uuid, proceduresDto);
     }
 
@@ -51,7 +51,7 @@ public class ProcedureController {
 
     @DeleteMapping("/{uuid}")
     public ResponseEntity<?> delete(@PathVariable UUID uuid) {
-        transactionLogService.logTransaction("ELIMINACION", "procedures", uuid.toString(), "Elimina_Procedures");
+        transactionLogService.logTransaction("ELIMINACION", "procedures", "Elimina_Procedures");
         return procedureService.delete(uuid);
     }
 }

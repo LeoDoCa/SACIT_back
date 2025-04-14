@@ -22,37 +22,37 @@ public class RequiredDocumentController {
 
     @GetMapping("/")
     public ResponseEntity<?> getAll() {
-        transactionLogService.logTransaction("OBTENER", "requiered_documents", "0", "Obtener_Documentos");
+        transactionLogService.logTransaction("OBTENER", "requiered_documents", "Obtener_Documentos");
         return requiredDocumentService.findAll();
     }
 
     @GetMapping("/{uuid}")
     public ResponseEntity<?> getOne(@PathVariable UUID uuid) {
-        transactionLogService.logTransaction("OBTENER", "requiered_documents", uuid.toString(), "Obtener_Documento_UUID");
+        transactionLogService.logTransaction("OBTENER", "requiered_documents", "Obtener_Documento_UUID");
         return requiredDocumentService.findByUuid(uuid);
     }
 
     @GetMapping("/procedure/{procedureUuid}")
     public ResponseEntity<?> getByProcedure(@PathVariable UUID procedureUuid) {
-        transactionLogService.logTransaction("OBTENER", "requiered_documents", "0", "Obtener_Documento_UUID_Procedure");
+        transactionLogService.logTransaction("OBTENER", "requiered_documents", "Obtener_Documento_UUID_Procedure");
         return requiredDocumentService.findByProcedure(procedureUuid);
     }
 
     @PostMapping("/procedure/{procedureUuid}")
     public ResponseEntity<?> save(@RequestBody RequiredDocumentsDto documentDto, @PathVariable UUID procedureUuid) {
-        transactionLogService.logTransaction("REGISTRAR", "requiered_documents", procedureUuid.toString(), "Documento_Procedure_Creado");
+        transactionLogService.logTransaction("REGISTRAR", "requiered_documents", "Documento_Procedure_Creado");
         return requiredDocumentService.save(documentDto, procedureUuid);
     }
 
     @PutMapping("/{uuid}")
     public ResponseEntity<?> update(@PathVariable UUID uuid, @RequestBody RequiredDocumentsDto documentDto) {
-        transactionLogService.logTransaction("ACTUALIZAR", "requiered_documents", uuid.toString(), "Documento_Actualizado");
+        transactionLogService.logTransaction("ACTUALIZAR", "requiered_documents", "Documento_Actualizado");
         return requiredDocumentService.update(uuid, documentDto);
     }
 
     @DeleteMapping("/{uuid}")
     public ResponseEntity<?> delete(@PathVariable UUID uuid) {
-        transactionLogService.logTransaction("ELIMINAR", "requiered_documents", uuid.toString(), "Documento_Eliminado");
+        transactionLogService.logTransaction("ELIMINAR", "requiered_documents", "Documento_Eliminado");
         return requiredDocumentService.delete(uuid);
     }
 }
