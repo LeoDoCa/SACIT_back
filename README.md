@@ -32,7 +32,8 @@ git clone <[URL_DEL_REPOSITORIO](https://github.com/LeoDoCa/SACIT_back/tree/main
 
 **2.** Crea una base de datos en MySQL
 ```sql
-CREATE DATABASE sacit;
+CREATE DATABASE sacit_dev;
+USE sacit_dev;
 ```
 **3** agrega a la carpeta de resources los archivos :
 
