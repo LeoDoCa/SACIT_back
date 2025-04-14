@@ -54,6 +54,7 @@ public class Security {
             "/api/window/{windowUuid}/appointments",
             "/api/appointments/{appointmentUuid}/documents",
             "/api/appointments/{uuid}/status",
+            "/api/user/{uuid}/attended-window"
     };
 
     private final String[] USER_LIST = {

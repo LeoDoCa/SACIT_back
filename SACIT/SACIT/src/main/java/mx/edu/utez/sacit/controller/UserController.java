@@ -248,4 +248,18 @@ public class UserController {
             return Utilities.generateResponse(HttpStatus.BAD_REQUEST,"An internal server error occurred", "500");
         }
     }
+
+    @GetMapping("/user/{uuid}/attended-window")
+    public ResponseEntity<Object> getAttendedWindowUuid(@PathVariable UUID uuid) {
+        try {
+            UUID attendedWindowUuid = userService.getAttendedWindowUuidByUserUuid(uuid);
+            return Utilities.ResponseWithData(HttpStatus.OK, "Window UUID fetched successfully.", "200", attendedWindowUuid);
+        } catch (IllegalArgumentException e) {
+            return Utilities.ResponseWithData(HttpStatus.NOT_FOUND, "User not found", "404", null );
+        } catch (IllegalStateException e) {
+            return Utilities.ResponseWithData(HttpStatus.BAD_REQUEST, "The user is not attending any window", "400", null );
+        } catch (Exception e) {
+            return Utilities.ResponseWithData(HttpStatus.INTERNAL_SERVER_ERROR, "An internal server error occurred","500", null );
+        }
+    }
 }

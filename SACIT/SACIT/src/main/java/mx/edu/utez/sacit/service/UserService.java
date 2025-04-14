@@ -3,6 +3,7 @@ package mx.edu.utez.sacit.service;
 import jakarta.transaction.Transactional;
 import mx.edu.utez.sacit.model.PasswordResetToken;
 import mx.edu.utez.sacit.model.UserModel;
+import mx.edu.utez.sacit.model.Window;
 import mx.edu.utez.sacit.repository.PasswordResetTokenRepository;
 import mx.edu.utez.sacit.repository.UserRepository;
 import org.springframework.context.annotation.Primary;
@@ -72,4 +73,25 @@ public class UserService {
         return repository.findByRole_Role(roleName);
     }
 
+    public UUID getAttendedWindowUuidByUserUuid(UUID userUuid) {
+        Optional<UserModel> optionalUser = repository.findByUuid(userUuid);
+
+        if (optionalUser.isPresent()) {
+            UserModel user = optionalUser.get();
+
+            if (user.getRole() == null || !"ROLE_WINDOW".equals(user.getRole().getRole())) {
+                throw new IllegalStateException("El usuario no tiene permiso para realizar esta acción.");
+            }
+
+            Window attendedWindow = user.getAttendedWindow();
+
+            if (attendedWindow != null) {
+                return attendedWindow.getUuid();
+            } else {
+                throw new IllegalStateException("El usuario no está atendiendo ninguna ventana.");
+            }
+        } else {
+            throw new IllegalArgumentException("Usuario no encontrado con el UUID proporcionado.");
+        }
+    }
 }
