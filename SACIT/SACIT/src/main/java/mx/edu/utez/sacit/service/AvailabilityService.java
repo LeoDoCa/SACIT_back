@@ -47,8 +47,7 @@ public class AvailabilityService {
 
     private boolean isWindowAvailable(Window window, LocalDate date,
                                       LocalTime startTime, LocalTime endTime) {
-        if (startTime.isBefore(window.getStartTime()) ||
-                endTime.isAfter(window.getEndTime())) {
+        if (startTime.isBefore(window.getStartTime()) || endTime.isAfter(window.getEndTime())) {
             return false;
         }
 
@@ -58,7 +57,7 @@ public class AvailabilityService {
         return existingAppointments.stream().noneMatch(appointment ->
                 isTimeOverlapping(
                         appointment.getStartTime(),
-                        appointment.getEndTime().plusMinutes(15),
+                        appointment.getEndTime(),
                         startTime,
                         endTime
                 )
@@ -67,7 +66,7 @@ public class AvailabilityService {
 
     private boolean isTimeOverlapping(LocalTime start1, LocalTime end1,
                                       LocalTime start2, LocalTime end2) {
-        return start1.isBefore(end2) && start2.isBefore(end1);
+        return !(end1.compareTo(start2) <= 0 || end2.compareTo(start1) <= 0);
     }
 
     public Map<String, Object> getAvailableTimes(LocalDate date, UUID procedureUuid) {
