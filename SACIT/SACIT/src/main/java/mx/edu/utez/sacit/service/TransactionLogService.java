@@ -16,12 +16,12 @@ public class TransactionLogService {
         this.repository = repository;
     }
 
-    public void logTransaction(String transactionType, String tableName, Integer relatedUserId, String details) {
+    public void logTransaction(String transactionType, String tableName, String relatedUuid, String details) {
         TransactionLog log = new TransactionLog();
         log.setUuid(UUID.randomUUID().toString());
         log.setTransactionType(transactionType);
         log.setTableName(tableName);
-        log.setRelatedUserId(relatedUserId);
+        log.setRelatedUuid(relatedUuid);
         log.setDetails(details);
         log.setTransactionDate(LocalDateTime.now());
 

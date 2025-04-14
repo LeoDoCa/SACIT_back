@@ -26,7 +26,10 @@ public class TransactionLog {
 
     private String transactionType;
     private String tableName;
-    private Integer relatedUserId;
+
+    @Column(name = "related_uuid", columnDefinition = "CHAR(36)")
+    private String relatedUuid;
+
     private String details;
 
     @Column(name = "transactionDate", nullable = false, columnDefinition = "DATETIME DEFAULT CURRENT_TIMESTAMP")
