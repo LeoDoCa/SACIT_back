@@ -13,7 +13,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api")
-@CrossOrigin(origins = "*")
 @AllArgsConstructor
 @MultipartConfig
 public class EmailController {
