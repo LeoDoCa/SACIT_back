@@ -42,27 +42,27 @@ public class DatabaseBackupService {
         new File(META_DIR).mkdirs();
     }
 
-    @Scheduled(cron = "0 */2 * * * *")
+    @Scheduled(cron = "0 0 2 * * *")
     public void dailyBackup() {
         backupTables("daily", false, "appointments", "uploaded_documents", "unlogged_users");
     }
 
-    @Scheduled(cron = "0 */3 * * * *")
+    @Scheduled(cron = "0 0 3 * * MON")
     public void weeklyBackup() {
         backupTables("weekly", false, "procedures", "required_documents", "users", "windows");
     }
 
-    @Scheduled(cron = "0 */4 * * * *")
+    @Scheduled(cron = "0 0 3 1 * *")
     public void monthlyBackup() {
         backupTables("monthly", false, "roles");
     }
 
-    @Scheduled(cron = "0 */5 * * * *")
+    @Scheduled(cron = "0 0 4 */3 * *")
     public void fullEveryThreeDays() {
         backupTables("every3days", false, "access_log", "transaction_log");
     }
 
-    @Scheduled(cron = "0 */1 * * * *")
+    @Scheduled(cron = "0 0 * * * *")
     public void incrementalHourly() {
         Map<String, String> tables = new HashMap<>();
         tables.put("appointments", "creation_date");

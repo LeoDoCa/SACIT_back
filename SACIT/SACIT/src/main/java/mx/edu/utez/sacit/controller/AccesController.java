@@ -31,8 +31,9 @@ public class AccesController {
     private final OtpService otpService;
     private final EmailService emailService;
     private final AccessLogService accessLogService;
-    private static  final Logger logger = LogManager.getLogger(AccesController.class);
+    private static final Logger logger = LogManager.getLogger(AppointmentController.class);
 
+    private static final String LOGIN_FAILED_EVENT = "LOGIN_FALLIDO";
     public AccesController(AuthenticationManager authenticationManager, JwtTokenUtil jwtTokenUtil, UserService service, OtpService otpService, EmailService emailService, AccessLogService accessLogService) {
         this.authenticationManager = authenticationManager;
         this.jwtTokenUtil = jwtTokenUtil;
@@ -72,7 +73,7 @@ public class AccesController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         } catch (BadCredentialsException e) {
             String ipX = servletRequest.getRemoteAddr();
-            accessLogService.registerEvent(request.getEmail(), "LOGIN_FALLIDO", ipX, "/api/login");
+            accessLogService.registerEvent(request.getEmail(), LOGIN_FAILED_EVENT, ipX, "/api/login");
             logger.error("Login failed for user {}: {}", request.getEmail(), e.getMessage());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
@@ -127,7 +128,7 @@ public class AccesController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Credenciales inválidas.");
         } catch (BadCredentialsException e) {
             String ipX = servletRequest.getRemoteAddr();
-            accessLogService.registerEvent(request.getEmail(), "LOGIN_FALLIDO", ipX, "/api/validate-credentials");
+            accessLogService.registerEvent(request.getEmail(), LOGIN_FAILED_EVENT, ipX, "/api/validate-credentials");
             logger.error("Credenciales inválidas para {}: {}", request.getEmail(), e.getMessage());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Credenciales inválidas.");
         }
@@ -176,7 +177,7 @@ public class AccesController {
             return ResponseEntity.ok(new AuthResponse(name, lastname, request.getEmail(), accessToken, role));
         } else {
             String ipX = servletRequest.getRemoteAddr();
-            accessLogService.registerEvent(request.getEmail(), "LOGIN_FALLIDO", ipX, "/api/verify-otp");
+            accessLogService.registerEvent(request.getEmail(), LOGIN_FAILED_EVENT, ipX, "/api/verify-otp");
             logger.error("OTP no válido para {}", request.getEmail());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
