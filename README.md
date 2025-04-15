@@ -43,7 +43,7 @@ USE sacit_dev;
 - application-test.properties
 - email.properties
 
-**4** Ejecuta el proyecto antes de utilizar el frontend
+**4** Recargar el archivo pom.xml, activa la anotación de lombok  ejecuta el proyecto antes de utilizar el frontend
 
 **El archivo con la configuración del proyecto es application-dev.properties si es necesario configura la siguiente línea por si deseas guardar cambios:**
  ```properties
